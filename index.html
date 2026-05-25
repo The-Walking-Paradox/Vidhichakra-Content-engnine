@@ -45,7 +45,7 @@ body{background:var(--bg);color:var(--text);font-family:'EB Garamond',serif;min-
 /* ── PREVIEW ── */
 .preview-wrap{padding:0 16px;margin-bottom:14px}
 .preview-label{font-size:10px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;font-family:'Philosopher',serif;margin-bottom:8px}
-.canvas-outer{border:1px solid var(--dim);border-radius:10px;overflow:hidden;background:#000;aspect-ratio:9/16;position:relative}
+.canvas-outer{border:1px solid var(--dim);border-radius:10px;overflow:hidden;background:#000;position:relative;width:100%;max-width:240px;margin:0 auto;aspect-ratio:9/16}
 canvas#cv{width:100%;height:100%;display:block}
 
 /* ── ACTIONS ── */
@@ -334,22 +334,30 @@ function downloadCard(){
   const cv2=document.createElement('canvas');
   cv2.width=1080; cv2.height=1920;
   drawCard(cv2.getContext('2d'),1080,1920,true);
-  // Open as image in new tab — long press → Save Image on iOS/Android
-  const win=window.open('','_blank');
-  if(win){
-    win.document.write('<html><head><title>विधि चक्र Card</title><style>body{margin:0;background:#000;display:flex;flex-direction:column;align-items:center;padding:16px;font-family:sans-serif;color:#FFD860}img{max-width:100%;border-radius:8px}p{font-size:13px;margin-top:12px;text-align:center;opacity:0.7}</style></head><body>');
-    win.document.write('<p>📱 Long-press image → Save to Photos</p>');
-    win.document.write('<img src="'+cv2.toDataURL('image/png')+'"/>');
-    win.document.write('</body></html>');
-    win.document.close();
-  } else {
-    // Fallback if popup blocked
-    const a=document.createElement('a');
-    a.href=cv2.toDataURL('image/png');
-    a.download=`vidhichakra-${_type}-${Date.now()}.png`;
-    document.body.appendChild(a); a.click();
-    setTimeout(()=>document.body.removeChild(a),300);
+  const dataUrl=cv2.toDataURL('image/png');
+
+  // Show inline save modal — works on iOS (long-press) and Android (download)
+  let modal=document.getElementById('save-modal');
+  if(!modal){
+    modal=document.createElement('div');
+    modal.id='save-modal';
+    modal.style.cssText='position:fixed;inset:0;z-index:999;background:rgba(0,0,0,0.92);overflow-y:auto;padding:16px;display:flex;flex-direction:column;align-items:center';
+    modal.innerHTML=`
+      <div style="width:100%;max-width:400px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="color:#FFD860;font-family:'Philosopher',serif;font-size:16px">💾 Save Image</div>
+          <button onclick="document.getElementById('save-modal').style.display='none'" style="background:none;border:1px solid #444;color:#888;padding:6px 14px;border-radius:4px;cursor:pointer;font-size:13px">✕ Close</button>
+        </div>
+        <div style="background:#111;border-radius:8px;padding:12px;margin-bottom:12px;font-size:12px;color:#AAA;line-height:1.8;font-family:'EB Garamond',serif;text-align:center">
+          📱 <b style="color:#FFD860">iPhone:</b> Long-press the image below → Save to Photos<br/>
+          🤖 <b style="color:#FFD860">Android:</b> Long-press image → Download image
+        </div>
+        <img id="save-img" style="width:100%;border-radius:8px;display:block"/>
+      </div>`;
+    document.body.appendChild(modal);
   }
+  document.getElementById('save-img').src=dataUrl;
+  modal.style.display='flex';
 }
 
 function drawCard(ctx,W,H,full){
@@ -400,55 +408,56 @@ function drawCard(ctx,W,H,full){
   });
 
   const PAD=70*s;
-  let y=H*0.05;
+  let y=H*0.07;
 
-  // ── Brand header ──
-  sg(c.glow,30);
-  ctx.font=`400 ${Math.round(22*s)}px 'Tiro Devanagari Sanskrit',serif`;
-  ctx.fillStyle=c.sub+'CC';
-  ctx.fillText('॥  विधि चक्र  ॥',W/2,y); y+=34*s;
-  gl(PAD*1.2,W-PAD*1.2,y,0.5); y+=32*s;
-  ctx.font=`${Math.round(52*s)}px 'Tiro Devanagari Sanskrit',serif`;
+  // ── Brand header (compact) ──
+  sg(c.glow,20);
+  ctx.font=`400 ${Math.round(18*s)}px 'Tiro Devanagari Sanskrit',serif`;
+  ctx.fillStyle=c.sub+'AA';
+  ctx.fillText('॥  विधि चक्र  ॥',W/2,y); y+=26*s;
+  gl(PAD*1.4,W-PAD*1.4,y,0.4); y+=24*s;
+  ctx.font=`${Math.round(42*s)}px 'Tiro Devanagari Sanskrit',serif`;
   ctx.fillStyle=c.gold;
-  ctx.fillText(c.sym,W/2,y); y+=42*s;
-  gl(PAD*1.2,W-PAD*1.2,y,0.5); y+=36*s;
+  ctx.fillText(c.sym,W/2,y); y+=34*s;
+  gl(PAD*1.4,W-PAD*1.4,y,0.4); y+=26*s;
   cg();
 
   // ── Category pill ──
-  const catFS=Math.round(24*s);
+  const catFS=Math.round(22*s);
   ctx.font=`400 ${catFS}px 'Tiro Devanagari Sanskrit',serif`;
-  const catW=ctx.measureText(TYPES[_type].label).width+80*s;
-  const catH=46*s, catX=W/2-catW/2;
+  const catW=ctx.measureText(TYPES[_type].label).width+70*s;
+  const catH=40*s, catX=W/2-catW/2;
   ctx.fillStyle=c.acc+'22';
   rr(catX,y,catW,catH,catH/2); ctx.fill();
   ctx.strokeStyle=c.acc+'77'; ctx.lineWidth=1.5*s;
   rr(catX,y,catW,catH,catH/2); ctx.stroke();
-  sg(c.glow,15);
+  sg(c.glow,12);
   ctx.fillStyle=c.gold+'EE';
   ctx.fillText(TYPES[_type].label,W/2,y+catH*0.68);
-  y+=catH+30*s; cg();
+  y+=catH+20*s; cg();
 
   // ── TYPE-SPECIFIC CONTENT ──
-  if(_type==='gyan') drawGyan(ctx,W,H,y,s,c,sg,cg,gl,rr);
+  const footerY=H*0.856; // raised so footer text stays inside frame
+  if(_type==='gyan') drawGyan(ctx,W,H,y,footerY,s,c,sg,cg,gl,rr);
   else if(_type==='upay') drawUpay(ctx,W,H,y,s,c,sg,cg,gl,rr);
   else if(_type==='prashna') drawPrashna(ctx,W,H,y,s,c,sg,cg,gl,rr);
   else if(_type==='mantra') drawMantra(ctx,W,H,y,s,c,sg,cg,gl,rr);
   else if(_type==='rashi') drawRashi(ctx,W,H,y,s,c,sg,cg,gl,rr);
   else if(_type==='tathya') drawTathya(ctx,W,H,y,s,c,sg,cg,gl,rr);
 
-  // ── Footer ──
-  const fY=H*0.895;
-  gl(PAD,W-PAD,fY,0.3);
-  sg(c.acc+'88',35);
-  ctx.font=`400 ${Math.round(22*s)}px 'Tiro Devanagari Sanskrit',serif`;
-  ctx.fillStyle=c.sub+'99';
-  ctx.fillText('उपाय • विधि • शक्ति',W/2,fY+36*s);
+  // ── Footer (raised, tighter) ──
+  const fY=H*0.856;
+  gl(PAD,W-PAD,fY,0.28);
+  sg(c.acc+'88',28);
+  ctx.font=`400 ${Math.round(18*s)}px 'Tiro Devanagari Sanskrit',serif`;
+  ctx.fillStyle=c.sub+'88';
+  ctx.fillText('उपाय • विधि • शक्ति',W/2,fY+28*s);
   ctx.fillStyle=c.gold;
-  ctx.font=`400 ${Math.round(48*s)}px 'Tiro Devanagari Sanskrit',serif`;
-  ctx.fillText('विधि चक्र',W/2,fY+98*s);
+  ctx.font=`400 ${Math.round(40*s)}px 'Tiro Devanagari Sanskrit',serif`;
+  ctx.fillText('विधि चक्र',W/2,fY+80*s);
   ctx.fillStyle=c.sub+'55';
-  ctx.font=`400 ${Math.round(18*s)}px 'Philosopher',serif`;
-  ctx.fillText('VIDHI CHAKRA',W/2,fY+128*s);
+  ctx.font=`400 ${Math.round(16*s)}px 'Philosopher',serif`;
+  ctx.fillText('VIDHI CHAKRA',W/2,fY+102*s);
   cg();
 }
 
@@ -471,68 +480,85 @@ function drawLines(ctx,lines,font,color,cx,startY,lh,sg,cg,glowC,glowSz){
 }
 
 // ── GYAN ──
-function drawGyan(ctx,W,H,y,s,c,sg,cg,gl,rr){
+function drawGyan(ctx,W,H,contentTop,footerY,s,c,sg,cg,gl,rr){
   const heading=getVal('f-heading'), source=getVal('f-source');
   const items=[1,2,3,4,5].map(i=>getVal('f-item-'+i)).filter(x=>x);
+  if(!heading&&!items.length) return;
 
-  if(heading){
-    const hFont=`700 ${Math.round(44*s)}px 'Tiro Devanagari Sanskrit',serif`;
-    const hl=wrapLines(ctx,heading,hFont,W*0.84);
-    const hLH=56*s;
-    sg(c.glow,25);
-    ctx.font=hFont; ctx.fillStyle=c.gold;
-    hl.forEach((l,i)=>ctx.fillText(l,W/2,y+hLH*0.82+i*hLH));
-    y+=hl.length*hLH+12*s; cg();
+  // ── Measure everything first ──
+  const hFS=Math.round(46*s), hLH=Math.round(58*s);
+  const iFS=Math.round(38*s), iLH=Math.round(50*s);
+  const CIRC_R=Math.round(30*s), CIRC_CX=Math.round(84*s);
+  const TEXT_X=CIRC_CX+CIRC_R+Math.round(20*s);
+  const TEXT_W=W-TEXT_X-Math.round(52*s);
+  const ROW_PAD=Math.round(26*s), ROW_GAP=Math.round(12*s);
+  const DIVIDER_H=Math.round(20*s);
+  const hLines=heading?wrapLines(ctx,heading,`700 ${hFS}px 'Tiro Devanagari Sanskrit',serif`,W*0.84):[];
+  const hBlock=hLines.length*hLH+(heading?Math.round(12*s):0);
+
+  const iRows=items.map(item=>{
+    const lines=wrapLines(ctx,item,`600 ${iFS}px 'Tiro Devanagari Sanskrit',serif`,TEXT_W);
+    const rowH=lines.length*iLH+ROW_PAD;
+    return{lines,rowH};
+  });
+  const iBlock=iRows.length?(DIVIDER_H+iRows.reduce((a,r)=>a+r.rowH+ROW_GAP,0)-ROW_GAP):0;
+  const totalH=hBlock+iBlock+(source?Math.round(32*s):0);
+
+  // Distribute content — bias 30% from top, spread remaining space between rows
+  const available=footerY-contentTop;
+  const topGap=Math.min(Math.round(20*s), Math.max(0,(available-totalH)*0.3));
+  let y=contentTop+topGap;
+  const leftover=available-totalH-topGap;
+  const spreadBonus=iRows.length>0?Math.min(Math.round(40*s),Math.max(0,Math.round(leftover/(iRows.length+1)))):0;
+
+  // ── Draw heading ──
+  if(hLines.length){
+    sg(c.glow,28);
+    ctx.font=`700 ${hFS}px 'Tiro Devanagari Sanskrit',serif`;
+    ctx.fillStyle=c.gold;
+    hLines.forEach((l,i)=>ctx.fillText(l,W/2,y+hLH*0.82+i*hLH));
+    y+=hLines.length*hLH+Math.round(12*s); cg();
   }
 
-  if(items.length){
-    gl(80*s,W-80*s,y,0.25); y+=16*s;
-    const iFont=`400 ${Math.round(28*s)}px 'Tiro Devanagari Sanskrit',serif`;
-    const iLH=38*s;
-    const CIRC_R=22*s, CIRC_CX=72*s;
-    const TEXT_X=CIRC_CX+CIRC_R+16*s;
-    const TEXT_W=W-TEXT_X-44*s;
-    const GAP=8*s;
-
-    items.forEach((item,idx)=>{
-      const il=wrapLines(ctx,item,iFont,TEXT_W);
-      const rowH=il.length*iLH+24*s;
-      const rowY=y;
-      const midY=rowY+rowH/2;
-
+  // ── Draw items ──
+  if(iRows.length){
+    gl(Math.round(80*s),W-Math.round(80*s),y,0.25); y+=DIVIDER_H;
+    iRows.forEach(({lines,rowH},idx)=>{
+      const midY=y+rowH/2;
       // Row bg
-      ctx.fillStyle='rgba(0,0,0,0.35)';
-      rr(44*s,rowY,W-88*s,rowH,12*s); ctx.fill();
-      ctx.strokeStyle=c.gold+'20'; ctx.lineWidth=1.5*s;
-      rr(44*s,rowY,W-88*s,rowH,12*s); ctx.stroke();
+      ctx.fillStyle='rgba(0,0,0,0.38)';
+      rr(Math.round(44*s),y,W-Math.round(88*s),rowH,Math.round(12*s)); ctx.fill();
+      ctx.strokeStyle=c.gold+'22'; ctx.lineWidth=1.5*s;
+      rr(Math.round(44*s),y,W-Math.round(88*s),rowH,Math.round(12*s)); ctx.stroke();
       // Left bar
       ctx.fillStyle=c.acc+'77';
-      ctx.fillRect(44*s,rowY+rowH*0.15,4*s,rowH*0.7);
-      // Number circle
+      ctx.fillRect(Math.round(44*s),y+rowH*0.15,Math.round(4*s),rowH*0.7);
+      // Circle
       ctx.beginPath(); ctx.arc(CIRC_CX,midY,CIRC_R,0,Math.PI*2);
       ctx.fillStyle=c.acc+'33'; ctx.fill();
-      ctx.strokeStyle=c.gold+'88'; ctx.lineWidth=2*s; ctx.stroke();
+      ctx.strokeStyle=c.gold+'88'; ctx.lineWidth=Math.round(2*s); ctx.stroke();
       sg(null,0);
-      ctx.textAlign='center';
       ctx.font=`700 ${Math.round(26*s)}px 'Philosopher',serif`;
-      ctx.fillStyle=c.gold;
-      ctx.fillText(idx+1,CIRC_CX,midY+9*s);
-      // Item text
+      ctx.fillStyle=c.gold; ctx.textAlign='center';
+      ctx.fillText(idx+1,CIRC_CX,midY+Math.round(9*s));
+      // Text
       ctx.textAlign='left';
-      ctx.font=iFont; ctx.fillStyle=c.text+'EE';
-      const textStartY=midY-(il.length*iLH)/2+iLH*0.78;
-      il.forEach((l,li)=>ctx.fillText(l,TEXT_X,textStartY+li*iLH));
+      ctx.font=`600 ${iFS}px 'Tiro Devanagari Sanskrit',serif`;
+      ctx.fillStyle=c.text;
+      const textY=midY-(lines.length*iLH)/2+iLH*0.78;
+      lines.forEach((l,li)=>ctx.fillText(l,TEXT_X,textY+li*iLH));
       ctx.textAlign='center';
-      y+=rowH+GAP;
+      y+=rowH+ROW_GAP+spreadBonus;
     });
     cg();
   }
 
+  // ── Source ──
   if(source){
-    y+=6*s;
+    y+=Math.round(6*s);
     ctx.font=`italic 400 ${Math.round(22*s)}px 'EB Garamond',serif`;
     ctx.fillStyle=c.sub+'77';
-    ctx.fillText('— '+source+' —',W/2,y+22*s);
+    ctx.fillText('— '+source+' —',W/2,y+Math.round(22*s));
   }
 }
 // ── UPAY ──
@@ -1169,20 +1195,35 @@ function smartPasteApply(){
   if(!raw.trim()) return;
   const r=smartParseText(raw);
 
-  // Switch to gyan type first (numbered items)
-  const gyanBtn=document.querySelector('[onclick="setType(\'gyan\',this)"]');
-  if(_type!=='gyan'&&gyanBtn){ setType('gyan',gyanBtn); }
-
-  // Fill fields after buildInputs has run
+  // Fill fields of whichever tab is currently active — don't switch tabs
   setTimeout(()=>{
-    if(r.heading){const el=document.getElementById('f-heading');if(el)el.value=r.heading;}
-    r.items.forEach((item,i)=>{const el=document.getElementById('f-item-'+(i+1));if(el)el.value=item;});
-    if(r.source){const el=document.getElementById('f-source');if(el)el.value=r.source;}
+    if(_type==='gyan'){
+      if(r.heading){const el=document.getElementById('f-heading');if(el)el.value=r.heading;}
+      r.items.forEach((item,i)=>{const el=document.getElementById('f-item-'+(i+1));if(el)el.value=item;});
+      for(let i=r.items.length+1;i<=5;i++){const el=document.getElementById('f-item-'+i);if(el)el.value='';}
+      if(r.source){const el=document.getElementById('f-source');if(el)el.value=r.source;}
+    } else if(_type==='upay'){
+      if(r.heading){const el=document.getElementById('f-problem');if(el)el.value=r.heading;}
+      // Join items as separate lines in the body textarea
+      const body=r.items.join('\n');
+      const bel=document.getElementById('f-body');if(bel)bel.value=body;
+      if(r.source){const el=document.getElementById('f-note');if(el)el.value=r.source;}
+    } else if(_type==='prashna'){
+      if(r.heading){const el=document.getElementById('f-question');if(el)el.value=r.heading;}
+      if(r.items.length){const el=document.getElementById('f-answer');if(el)el.value=r.items.join(' ');}
+    } else if(_type==='mantra'){
+      if(r.heading){const el=document.getElementById('f-mantra');if(el)el.value=r.heading;}
+      if(r.items.length){const el=document.getElementById('f-artha');if(el)el.value=r.items.join(' ');}
+    } else if(_type==='rashi'){
+      if(r.heading){const el=document.getElementById('f-rashi');if(el)el.value=r.heading;}
+      if(r.items.length){const el=document.getElementById('f-body');if(el)el.value=r.items.join('\n');}
+    } else if(_type==='tathya'){
+      if(r.heading){const el=document.getElementById('f-heading');if(el)el.value=r.heading;}
+      if(r.items.length){const el=document.getElementById('f-body');if(el)el.value=r.items.join('\n');}
+    }
     renderCard();
     closeSmartPaste();
-    // Clear remaining item fields
-    for(let i=r.items.length+1;i<=5;i++){const el=document.getElementById('f-item-'+i);if(el)el.value='';}
-  },100);
+  },50);
 }
 
 // ── INIT ──
