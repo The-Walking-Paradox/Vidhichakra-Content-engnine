@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="ne">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>विधि चक्र — Content Cards</title>
+<link href="https://fonts.googleapis.com/css2?family=Tiro+Devanagari+Sanskrit:ital@0;1&family=Philosopher:ital,wght@0,400;0,700;1,400&family=EB+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080610;--bg2:#0F0C1A;--bg3:#161228;
+  --gold:#F0C040;--gold2:rgba(240,192,64,0.25);
+  --text:#F0EAD6;--muted:#7060A0;--dim:#2A2040;
+  --acc:#9966DD;--red:#FF5050;--green:#40C880;
+  --amber:#F0A030;
+}
+body{background:var(--bg);color:var(--text);font-family:'EB Garamond',serif;min-height:100vh;padding:0 0 60px}
+
+/* ── TOP NAV ── */
+.topnav{background:linear-gradient(135deg,#0F0820,#07040F);border-bottom:1px solid rgba(240,192,64,0.2);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.brand{font-family:'Tiro Devanagari Sanskrit',serif;font-size:20px;color:var(--gold);letter-spacing:1px}
+.brand span{font-family:'Philosopher',serif;font-size:11px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;display:block;margin-top:2px}
+
+/* ── CARD TYPE TABS ── */
+.type-scroll{display:flex;gap:8px;overflow-x:auto;padding:14px 16px 10px;scrollbar-width:none}
+.type-scroll::-webkit-scrollbar{display:none}
+.type-btn{flex-shrink:0;padding:7px 16px;border-radius:20px;border:1px solid var(--dim);background:var(--bg2);color:var(--muted);font-size:12px;cursor:pointer;font-family:'Philosopher',serif;letter-spacing:1px;transition:all .2s}
+.type-btn.active{background:rgba(240,192,64,0.12);border-color:var(--gold);color:var(--gold)}
+
+/* ── INPUTS ── */
+.inputs{padding:0 16px 14px}
+.field{margin-bottom:12px}
+.field label{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;font-family:'Philosopher',serif;display:block;margin-bottom:6px}
+.field input,.field textarea,.field select{width:100%;background:var(--bg3);border:1px solid var(--dim);border-radius:6px;padding:10px 12px;color:var(--text);font-family:'Tiro Devanagari Sanskrit',serif;font-size:15px;outline:none;line-height:1.6;transition:border-color .2s}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--gold)}
+.field textarea{resize:vertical}
+.field select{font-family:'EB Garamond',serif;font-size:14px;cursor:pointer}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* ── COLOR THEME SELECTOR ── */
+.theme-row{display:flex;gap:8px;flex-wrap:wrap;padding:0 16px 14px}
+.theme-dot{width:30px;height:30px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .2s;position:relative}
+.theme-dot.active{border-color:var(--gold);transform:scale(1.15)}
+
+/* ── PREVIEW ── */
+.preview-wrap{padding:0 16px;margin-bottom:14px}
+.preview-label{font-size:10px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;font-family:'Philosopher',serif;margin-bottom:8px}
+.canvas-outer{border:1px solid var(--dim);border-radius:10px;overflow:hidden;background:#000;aspect-ratio:9/16;position:relative}
+canvas#cv{width:100%;height:100%;display:block}
+
+/* ── ACTIONS ── */
+.actions{padding:0 16px;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.btn{padding:12px;border-radius:6px;font-family:'Philosopher',serif;font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;border:none;transition:all .2s;text-align:center}
+.btn-gold{background:var(--gold);color:#1A0800}
+.btn-outline{background:transparent;border:1px solid var(--dim);color:var(--muted)}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+
+/* ── DIVIDER ── */
+.divider{height:1px;background:linear-gradient(to right,transparent,var(--gold2),transparent);margin:4px 16px 16px}
+
+/* ── SUGGESTIONS ── */
+.suggestions{padding:0 16px}
+.sug-title{font-size:10px;color:var(--muted);letter-spacing:3px;text-transform:uppercase;font-family:'Philosopher',serif;margin-bottom:10px}
+.sug-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sug-card{background:var(--bg2);border:1px solid var(--dim);border-radius:8px;padding:10px 12px;cursor:pointer;transition:all .2s}
+.sug-card:hover{border-color:var(--acc);background:rgba(153,102,221,0.08)}
+.sug-card .sug-tag{font-size:9px;color:var(--acc);letter-spacing:2px;text-transform:uppercase;font-family:'Philosopher',serif;margin-bottom:4px}
+.sug-card .sug-text{font-family:'Tiro Devanagari Sanskrit',serif;font-size:13px;color:var(--text);line-height:1.5}
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<div class="topnav">
+  <div>
+    <div class="brand">विधि चक्र</div>
+    <div class="brand"><span>CONTENT CARDS</span></div>
+  </div>
+  <div style="font-family:'Tiro Devanagari Sanskrit',serif;font-size:22px;color:var(--gold)">ॐ</div>
+</div>
+
+<!-- CARD TYPE TABS -->
+<div class="type-scroll" id="type-tabs">
+  <button class="type-btn active" onclick="setType('gyan',this)">📿 ज्ञान</button>
+  <button class="type-btn" onclick="setType('upay',this)">🔮 उपाय</button>
+  <button class="type-btn" onclick="setType('prashna',this)">❓ प्रश्न</button>
+  <button class="type-btn" onclick="setType('mantra',this)">🔱 मन्त्र</button>
+  <button class="type-btn" onclick="setType('rashi',this)">⭐ राशि</button>
+  <button class="type-btn" onclick="setType('tathya',this)">📖 तथ्य</button>
+</div>
+
+<!-- VIEW TOGGLE -->
+<div style="display:flex;gap:10px;padding:0 16px 14px">
+  <button class="type-btn active" id="view-static" onclick="setView('static',this)" style="flex:1;text-align:center">🖼 Static Card</button>
+  <button class="type-btn" id="view-anim" onclick="setView('anim',this)" style="flex:1;text-align:center">🎬 Animation</button>
+</div>
+
+<!-- THEME DOTS -->
+<div style="padding:4px 16px 4px;font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;font-family:'Philosopher',serif">Theme</div>
+<div class="theme-row" id="theme-row">
+  <div class="theme-dot active" data-theme="shakti" style="background:radial-gradient(#B83880,#14021C)" onclick="setTheme('shakti',this)" title="Shakti"></div>
+  <div class="theme-dot" data-theme="shiva" style="background:radial-gradient(#6644FF,#0A0A18)" onclick="setTheme('shiva',this)" title="Shiva"></div>
+  <div class="theme-dot" data-theme="vishnu" style="background:radial-gradient(#2288FF,#001020)" onclick="setTheme('vishnu',this)" title="Vishnu"></div>
+  <div class="theme-dot" data-theme="ganesh" style="background:radial-gradient(#FF8C00,#180800)" onclick="setTheme('ganesh',this)" title="Ganesh"></div>
+  <div class="theme-dot" data-theme="saraswati" style="background:radial-gradient(#00BFFF,#001428)" onclick="setTheme('saraswati',this)" title="Saraswati"></div>
+  <div class="theme-dot" data-theme="cosmic" style="background:radial-gradient(#FFB020,#100A00)" onclick="setTheme('cosmic',this)" title="Cosmic Gold"></div>
+</div>
+
+<!-- SMART PASTE -->
+<div style="padding:0 16px 10px;display:flex;align-items:center;gap:10px">
+  <button class="btn btn-outline" onclick="openSmartPaste()" style="flex:1;font-size:12px;border-color:var(--acc);color:var(--acc)">✨ Smart Paste — Auto-fill from text</button>
+</div>
+
+<!-- Smart Paste Modal -->
+<div id="sp-modal" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.85);padding:20px 16px;overflow-y:auto">
+  <div style="max-width:460px;margin:0 auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+      <div style="font-family:'Tiro Devanagari Sanskrit',serif;font-size:18px;color:var(--gold)">✨ Smart Paste</div>
+      <button onclick="closeSmartPaste()" style="background:none;border:1px solid var(--dim);color:var(--muted);padding:6px 14px;border-radius:4px;cursor:pointer;font-size:13px">✕</button>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:10px;font-family:'EB Garamond',serif;line-height:1.7">
+      Copy any content — WhatsApp message, notes, typed text — and paste below. The tool will automatically detect the heading, numbered points, and source.
+    </div>
+    <textarea id="sp-input" rows="10" placeholder="यहाँ पेस्ट गर्नुहोस्...\n\nउदाहरण:\nशनि साढेसातीको प्रभाव\n१. यो साढे सात वर्ष चल्छ\n२. शनिदेवले कर्मको फल दिन्छन्\nस्रोत: बृहत्पाराशर होरा" style="width:100%;background:var(--bg3);border:1px solid var(--dim);border-radius:6px;padding:12px;color:var(--text);font-family:'Tiro Devanagari Sanskrit',serif;font-size:14px;outline:none;line-height:1.7;resize:vertical;margin-bottom:12px"></textarea>
+    <div id="sp-preview" style="display:none;background:var(--bg2);border:1px solid var(--dim);border-radius:6px;padding:12px;margin-bottom:12px;font-size:13px;font-family:'EB Garamond',serif;line-height:1.8"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button class="btn btn-outline" onclick="smartParsePeview()" style="font-size:13px">👁 Preview Parse</button>
+      <button class="btn btn-gold" onclick="smartPasteApply()" style="font-size:13px">✓ Fill Fields</button>
+    </div>
+  </div>
+</div>
+
+<!-- INPUTS (dynamic per type) -->
+<div class="inputs" id="inputs-area"></div>
+
+<div class="divider"></div>
+
+<!-- PREVIEW -->
+<div class="preview-wrap">
+  <div class="preview-label" id="preview-label">Preview — 9:16</div>
+  <!-- Static card canvas -->
+  <div class="canvas-outer" id="static-wrap">
+    <canvas id="cv"></canvas>
+  </div>
+  <!-- Animation canvas -->
+  <div class="canvas-outer" id="anim-wrap" style="display:none;position:relative">
+    <canvas id="anim-cv" style="width:100%;height:100%;display:block"></canvas>
+    <div id="anim-cd-overlay" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none"></div>
+  </div>
+</div>
+
+<!-- ACTIONS -->
+<div class="actions" id="static-actions">
+  <button class="btn btn-gold" onclick="downloadCard()">⬇ Download PNG</button>
+  <button class="btn btn-outline" onclick="renderCard()">↺ Refresh</button>
+</div>
+<div id="anim-actions" style="display:none;padding:0 16px;margin-bottom:16px">
+  <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
+    <button class="btn btn-gold" onclick="vcCountdown(3)" style="font-size:12px">⏱ 3s</button>
+    <button class="btn btn-gold" onclick="vcCountdown(5)" style="font-size:12px">⏱ 5s</button>
+    <button class="btn btn-outline" onclick="vcReset()" style="font-size:12px">↺ Reset</button>
+  </div>
+  <button class="btn btn-outline" onclick="vcPlay()" id="vc-play-btn" style="width:100%;font-size:13px;margin-bottom:8px">▶ Play immediately</button>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+    <button class="btn btn-gold" onclick="vcStartRecord()" id="vc-rec-btn" style="font-size:12px">⏺ Record WebM</button>
+    <button class="btn btn-outline" onclick="vcSaveFrame()" style="font-size:12px;border-color:var(--gold);color:var(--gold)">🖼 Save Frame</button>
+  </div>
+  <div id="vc-rec-status" style="font-size:11px;color:var(--muted);text-align:center;min-height:16px;margin-bottom:6px;font-family:'Philosopher',serif"></div>
+  <div style="font-size:11px;color:var(--muted);line-height:1.9;font-family:'EB Garamond',serif">
+    📹 <b style="color:var(--gold)">Record WebM</b> — records full animation, downloads as .webm (Android Chrome)<br/>
+    📱 iOS: use ⏱ countdown + screen recorder instead<br/>
+    🖼 Save Frame: pause anytime → save that moment as PNG
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- SUGGESTIONS -->
+<div class="suggestions">
+  <div class="sug-title">✦ सुझाव — Content Ideas</div>
+  <div class="sug-grid" id="sug-grid"></div>
+</div>
+
+<script>
+const THEMES = {
+  shakti:    {bg1:'#1A0020',bg2:'#060008',acc:'#CC44AA',gold:'#FFB0E8',text:'#FFF0FA',sub:'#C080B0',glow:'#FF40CC',sym:'ॐ',cat:'शक्ति'},
+  shiva:     {bg1:'#0A0A20',bg2:'#020210',acc:'#6644FF',gold:'#C8B0FF',text:'#F0EEFF',sub:'#8878C0',glow:'#8866FF',sym:'🔱',cat:'शिव'},
+  vishnu:    {bg1:'#001428',bg2:'#000810',acc:'#2288EE',gold:'#80D0FF',text:'#E8F4FF',sub:'#5090B0',glow:'#44AAFF',sym:'ॐ',cat:'विष्णु'},
+  ganesh:    {bg1:'#1C0800',bg2:'#080200',acc:'#E07020',gold:'#FFD060',text:'#FFF4E0',sub:'#C09050',glow:'#FF9030',sym:'ॐ',cat:'गणेश'},
+  saraswati: {bg1:'#001828',bg2:'#000810',acc:'#00A8CC',gold:'#80E8FF',text:'#E0F8FF',sub:'#5098B0',glow:'#00C8F0',sym:'ॐ',cat:'सरस्वती'},
+  cosmic:    {bg1:'#140C00',bg2:'#060300',acc:'#CC8800',gold:'#FFE060',text:'#FFF8E0',sub:'#B09040',glow:'#FFB020',sym:'✦',cat:'ब्रह्माण्ड'},
+};
+
+const TYPES = {
+  gyan:    {label:'ज्ञान',fields:['heading','body','source'],headingPH:'e.g. शनि ग्रहको प्रभाव',bodyPH:'ज्योतिष वा वेदिक ज्ञानको कुरा नेपालीमा लेख्नुहोस्...',sourcePH:'e.g. बृहत्पाराशर होरा शास्त्र'},
+  upay:    {label:'उपाय',fields:['problem','body','note'],headingPH:'e.g. घरमा नकारात्मक ऊर्जा',bodyPH:'उपाय वा समाधान नेपालीमा...',notePH:'e.g. हरेक मंगलबार गर्नुहोस्'},
+  prashna: {label:'प्रश्न',fields:['question','answer'],questionPH:'e.g. के तपाईंलाई थाहा छ शनिदेव किन न्यायाधीश हुन्?',answerPH:'उत्तर वा रोचक तथ्य नेपालीमा...'},
+  mantra:  {label:'मन्त्र',fields:['mantra','artha'],mantraPH:'e.g. ॐ नमः शिवाय',arthaPH:'मन्त्रको अर्थ नेपालीमा...'},
+  rashi:   {label:'राशि',fields:['rashi','body','keyword'],rashiPH:'e.g. मेष राशि',bodyPH:'राशिको विशेषता वा आजको फल...',keywordPH:'e.g. साहस • नेतृत्व • ऊर्जा'},
+  tathya:  {label:'तथ्य',fields:['number','heading','body'],numberPH:'e.g. ७',headingPH:'e.g. सात ग्रहको महत्त्व',bodyPH:'रोचक वेदिक तथ्य नेपालीमा...'},
+};
+
+const SUGGESTIONS = {
+  gyan:[
+    {tag:'ज्योतिष',text:'शनि साढेसातीको बारेमा के जान्नु जरुरी छ?'},
+    {tag:'वास्तु',text:'घरको उत्तर-पूर्व दिशा किन पवित्र मानिन्छ?'},
+    {tag:'ज्योतिष',text:'राहु र केतु — छाया ग्रह किन महत्त्वपूर्ण?'},
+    {tag:'वेद',text:'एकादशीको व्रत किन राखिन्छ?'},
+  ],
+  upay:[
+    {tag:'घर',text:'घरमा शान्ति ल्याउने ५ वास्तु उपाय'},
+    {tag:'धन',text:'शुक्रबारको यो उपायले आर्थिक समस्या हट्छ'},
+    {tag:'स्वास्थ्य',text:'सूर्य नमस्कारको ज्योतिषीय महत्त्व'},
+    {tag:'सम्बन्ध',text:'दाम्पत्य जीवन सुधार्ने मंगल उपाय'},
+  ],
+  prashna:[
+    {tag:'प्रश्न',text:'के तपाईंलाई थाहा छ — जन्म कुण्डलीमा ९ घर के हो?'},
+    {tag:'प्रश्न',text:'किन मंगलबार मासु खान निषेध गरिन्छ?'},
+    {tag:'प्रश्न',text:'पञ्चाङ्गमा पाँच कुरा के-के हुन्?'},
+    {tag:'प्रश्न',text:'राशिफल र कुण्डली — फरक के छ?'},
+  ],
+  mantra:[
+    {tag:'मन्त्र',text:'ॐ गं गणपतये नमः'},
+    {tag:'मन्त्र',text:'महामृत्युञ्जय मन्त्र'},
+    {tag:'मन्त्र',text:'गायत्री मन्त्र'},
+    {tag:'मन्त्र',text:'ॐ शं शनैश्चराय नमः'},
+  ],
+  rashi:[
+    {tag:'राशि',text:'मेष — आजको विशेष फल'},
+    {tag:'राशि',text:'वृश्चिक राशिको मुख्य विशेषता'},
+    {tag:'राशि',text:'मिथुन र बुध ग्रहको सम्बन्ध'},
+    {tag:'राशि',text:'वृष राशि — प्रेम र सम्बन्धमा'},
+  ],
+  tathya:[
+    {tag:'तथ्य',text:'२७ नक्षत्र र चन्द्रमाको सम्बन्ध'},
+    {tag:'तथ्य',text:'१२ राशि र १२ भावको अर्थ'},
+    {tag:'तथ्य',text:'नवग्रह — ९ ग्रहको संक्षिप्त परिचय'},
+    {tag:'तथ्य',text:'वैदिक ज्योतिष र पश्चिमी ज्योतिषको फरक'},
+  ],
+};
+
+let _type='gyan', _theme='shakti';
+
+function setType(t,btn){
+  _type=t;
+  document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  buildInputs();
+  buildSuggestions();
+  renderCard();
+}
+
+function setTheme(t,dot){
+  _theme=t;
+  document.querySelectorAll('.theme-dot').forEach(d=>d.classList.remove('active'));
+  dot.classList.add('active');
+  renderCard();
+}
+
+function buildInputs(){
+  const T=TYPES[_type];
+  let html='';
+
+  if(_type==='gyan'){
+    html=`
+      <div class="field"><label>शीर्षक / Heading</label><input id="f-heading" placeholder="${T.headingPH}" oninput="renderCard()"/></div>
+      <div style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;font-family:'Philosopher',serif;margin-bottom:8px">बुँदाहरू / Points (प्रत्येक बुँदा छुट्टाछुट्टै)</div>
+      ${[1,2,3,4,5].map(i=>`
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <div style="width:28px;height:28px;border-radius:50%;background:rgba(153,102,221,0.25);border:1.5px solid rgba(153,102,221,0.6);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Philosopher',serif;font-size:13px;font-weight:700;color:var(--gold)">${i}</div>
+        <input id="f-item-${i}" style="flex:1;background:var(--bg3);border:1px solid var(--dim);border-radius:6px;padding:9px 12px;color:var(--text);font-family:'Tiro Devanagari Sanskrit',serif;font-size:14px;outline:none" placeholder="बुँदा ${i}..." oninput="renderCard()"/>
+      </div>`).join('')}
+      <div class="field" style="margin-top:4px"><label>स्रोत / Source</label><input id="f-source" placeholder="${T.sourcePH}" oninput="renderCard()"/></div>`;
+  } else if(_type==='upay'){
+    html=`
+      <div class="field"><label>समस्या / Problem</label><input id="f-problem" placeholder="${T.headingPH}" oninput="renderCard()"/></div>
+      <div class="field"><label>उपाय / Remedy</label><textarea id="f-body" rows="5" placeholder="${T.bodyPH}" oninput="renderCard()"></textarea></div>
+      <div class="field"><label>विशेष नोट</label><input id="f-note" placeholder="${T.notePH}" oninput="renderCard()"/></div>`;
+  } else if(_type==='prashna'){
+    html=`
+      <div class="field"><label>प्रश्न / Question</label><textarea id="f-question" rows="3" placeholder="${T.questionPH}" oninput="renderCard()"></textarea></div>
+      <div class="field"><label>उत्तर / Answer</label><textarea id="f-answer" rows="4" placeholder="${T.answerPH}" oninput="renderCard()"></textarea></div>`;
+  } else if(_type==='mantra'){
+    html=`
+      <div class="field"><label>मन्त्र</label><textarea id="f-mantra" rows="2" placeholder="${T.mantraPH}" oninput="renderCard()" style="font-size:18px"></textarea></div>
+      <div class="field"><label>अर्थ (नेपाली)</label><textarea id="f-artha" rows="4" placeholder="${T.arthaPH}" oninput="renderCard()"></textarea></div>`;
+  } else if(_type==='rashi'){
+    html=`
+      <div class="row2">
+        <div class="field"><label>राशि</label><input id="f-rashi" placeholder="${T.rashiPH}" oninput="renderCard()"/></div>
+        <div class="field"><label>कीवर्ड</label><input id="f-keyword" placeholder="${T.keywordPH}" oninput="renderCard()"/></div>
+      </div>
+      <div class="field"><label>विवरण</label><textarea id="f-body" rows="5" placeholder="${T.bodyPH}" oninput="renderCard()"></textarea></div>`;
+  } else if(_type==='tathya'){
+    html=`
+      <div class="row2">
+        <div class="field"><label>अंक / Number</label><input id="f-number" placeholder="${T.numberPH}" oninput="renderCard()"/></div>
+        <div class="field"><label>शीर्षक</label><input id="f-heading" placeholder="${T.headingPH}" oninput="renderCard()"/></div>
+      </div>
+      <div class="field"><label>तथ्य / Fact</label><textarea id="f-body" rows="5" placeholder="${T.bodyPH}" oninput="renderCard()"></textarea></div>`;
+  }
+  document.getElementById('inputs-area').innerHTML=html;
+}
+
+function buildSuggestions(){
+  const sugs=SUGGESTIONS[_type]||[];
+  document.getElementById('sug-grid').innerHTML=sugs.map(s=>`
+    <div class="sug-card" onclick="applySuggestion(this)" data-text="${s.text.replace(/"/g,'&quot;')}">
+      <div class="sug-tag">${s.tag}</div>
+      <div class="sug-text">${s.text}</div>
+    </div>`).join('');
+}
+
+function applySuggestion(card){
+  const text=card.dataset.text;
+  const target=document.getElementById('f-heading')||document.getElementById('f-question')||document.getElementById('f-mantra')||document.getElementById('f-problem')||document.getElementById('f-rashi');
+  if(target){target.value=text;renderCard();}
+}
+
+// ── CANVAS RENDERER ──
+function getVal(id){return document.getElementById(id)?.value.trim()||'';}
+
+function renderCard(){
+  const cv=document.getElementById('cv');
+  if(!cv)return;
+  // Always render preview at fixed 540×960 (half of final 1080×1920)
+  // This gives s=0.5 so fonts are exactly half final size — readable and correct proportions
+  cv.width=540; cv.height=960;
+  cv.style.width='100%'; cv.style.height='100%';
+  drawCard(cv.getContext('2d'),540,960,false);
+}
+
+function downloadCard(){
+  const cv2=document.createElement('canvas');
+  cv2.width=1080; cv2.height=1920;
+  drawCard(cv2.getContext('2d'),1080,1920,true);
+  // Open as image in new tab — long press → Save Image on iOS/Android
+  const win=window.open('','_blank');
+  if(win){
+    win.document.write('<html><head><title>विधि चक्र Card</title><style>body{margin:0;background:#000;display:flex;flex-direction:column;align-items:center;padding:16px;font-family:sans-serif;color:#FFD860}img{max-width:100%;border-radius:8px}p{font-size:13px;margin-top:12px;text-align:center;opacity:0.7}</style></head><body>');
+    win.document.write('<p>📱 Long-press image → Save to Photos</p>');
+    win.document.write('<img src="'+cv2.toDataURL('image/png')+'"/>');
+    win.document.write('</body></html>');
+    win.document.close();
+  } else {
+    // Fallback if popup blocked
+    const a=document.createElement('a');
+    a.href=cv2.toDataURL('image/png');
+    a.download=`vidhichakra-${_type}-${Date.now()}.png`;
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>document.body.removeChild(a),300);
+  }
+}
+
+function drawCard(ctx,W,H,full){
+  const c=THEMES[_theme];
+  const s=W/1080;
+
+  // ── Background ──
+  const bg=ctx.createRadialGradient(W/2,H*0.3,0,W/2,H*0.3,H*0.9);
+  bg.addColorStop(0,c.bg1); bg.addColorStop(1,c.bg2);
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+
+  // Radial glow
+  const rg=ctx.createRadialGradient(W/2,H*0.3,0,W/2,H*0.3,W*0.65);
+  rg.addColorStop(0,c.glow+'28'); rg.addColorStop(1,'transparent');
+  ctx.fillStyle=rg; ctx.fillRect(0,0,W,H);
+
+  // Scanline texture
+  for(let i=0;i<H;i+=3*s){
+    ctx.fillStyle='rgba(0,0,0,0.04)';
+    ctx.fillRect(0,i,W,1.5*s);
+  }
+
+  function sg(col,sz){ctx.shadowColor=col;ctx.shadowBlur=sz*s;ctx.shadowOffsetY=2*s;}
+  function cg(){ctx.shadowColor='transparent';ctx.shadowBlur=0;ctx.shadowOffsetY=0;}
+  function gl(x1,x2,y,op){
+    const g=ctx.createLinearGradient(x1,y,x2,y);
+    g.addColorStop(0,'transparent');
+    g.addColorStop(0.5,c.gold+Math.round(op*255).toString(16).padStart(2,'0'));
+    g.addColorStop(1,'transparent');
+    ctx.strokeStyle=g; ctx.lineWidth=1.5*s;
+    ctx.beginPath();ctx.moveTo(x1,y);ctx.lineTo(x2,y);ctx.stroke();
+  }
+  function rr(x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);
+    ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);
+    ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);
+    ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();
+  }
+
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+
+  // ── Corner ornaments ──
+  const co=44*s;
+  ctx.strokeStyle=c.gold+'44'; ctx.lineWidth=2*s;
+  [[0,0,1,1],[W,0,-1,1],[0,H,1,-1],[W,H,-1,-1]].forEach(([cx,cy,sx,sy])=>{
+    ctx.beginPath();ctx.moveTo(cx+sx*co,cy);ctx.lineTo(cx,cy);ctx.lineTo(cx,cy+sy*co);ctx.stroke();
+  });
+
+  const PAD=70*s;
+  let y=H*0.05;
+
+  // ── Brand header ──
+  sg(c.glow,30);
+  ctx.font=`400 ${Math.round(22*s)}px 'Tiro Devanagari Sanskrit',serif`;
+  ctx.fillStyle=c.sub+'CC';
+  ctx.fillText('॥  विधि चक्र  ॥',W/2,y); y+=34*s;
+  gl(PAD*1.2,W-PAD*1.2,y,0.5); y+=32*s;
+  ctx.font=`${Math.round(52*s)}px 'Tiro Devanagari Sanskrit',serif`;
+  ctx.fillStyle=c.gold;
+  ctx.fillText(c.sym,W/2,y); y+=42*s;
+  gl(PAD*1.2,W-PAD*1.2,y,0.5); y+=36*s;
+  cg();
+
+  // ── Category pill ──
+  const catFS=Math.round(24*s);
+  ctx.font=`400 ${catFS}px 'Tiro Devanagari Sanskrit',serif`;
+  const catW=ctx.measureText(TYPES[_type].label).width+80*s;
+  const catH=46*s, catX=W/2-catW/2;
+  ctx.fillStyle=c.acc+'22';
+  rr(catX,y,catW,catH,catH/2); ctx.fill();
+  ctx.strokeStyle=c.acc+'77'; ctx.lineWidth=1.5*s;
+  rr(catX,y,catW,catH,catH/2); ctx.stroke();
+  sg(c.glow,15);
+  ctx.fillStyle=c.gold+'EE';
+  ctx.fillText(TYPES[_type].label,W/2,y+catH*0.68);
+  y+=catH+30*s; cg();
+
+  // ── TYPE-SPECIFIC CONTENT ──
+  if(_type==='gyan') drawGyan(ctx,W,H,y,s,c,sg,cg,gl,rr);
+  else if(_type==='upay') drawUpay(ctx,W,H,y,s,c,sg,cg,gl,rr);
+  else if(_type==='prashna') drawPrashna(ctx,W,H,y,s,c,sg,cg,gl,rr);
+  else if(_type==='mantra') drawMantra(ctx,W,H,y,s,c,sg,cg,gl,rr);
+  else if(_type==='rashi') drawRashi(ctx,W,H,y,s,c,sg,cg,gl,rr);
+  else if(_type==='tathya') drawTathya(ctx,W,H,y,s,c,sg,cg,gl,rr);
+
+  // ── Footer ──
+  const fY=H*0.895;
+  gl(PAD,W-PAD,fY,0.3);
+  sg(c.acc+'88',35);
+  ctx.font=`400 ${Math.round(22*s)}px 'Tiro Devanagari Sanskrit',serif`;
+  ctx.fillStyle=c.sub+'99';
+  ctx.fillText('उपाय • विधि • शक्ति',W/2,fY+36*s);
+  ctx.fillStyle=c.gold;
+  ctx.font=`400 ${Math.round(48*s)}px 'Tiro Devanagari Sanskrit',serif`;
+  ctx.fillText('विधि चक्र',W/2,fY+98*s);
+  ctx.fillStyle=c.sub+'55';
+  ctx.font=`400 ${Math.round(18*s)}px 'Philosopher',serif`;
+  ctx.fillText('VIDHI CHAKRA',W/2,fY+128*s);
+  cg();
+}
+
+function wrapLines(ctx,text,font,maxW){
+  ctx.font=font;
+  const words=text.split(/\s+/); const lines=[]; let cur='';
+  words.forEach(w=>{
+    const t=cur?cur+' '+w:w;
+    if(ctx.measureText(t).width>maxW&&cur){lines.push(cur);cur=w;}else cur=t;
+  });
+  if(cur)lines.push(cur);
+  return lines;
+}
+function drawLines(ctx,lines,font,color,cx,startY,lh,sg,cg,glowC,glowSz){
+  ctx.font=font; ctx.fillStyle=color;
+  if(sg&&glowC)sg(glowC,glowSz||20);
+  lines.forEach((l,i)=>ctx.fillText(l,cx,startY+i*lh));
+  if(cg)cg();
+  return lines.length*lh;
+}
+
+// ── GYAN ──
+function drawGyan(ctx,W,H,y,s,c,sg,cg,gl,rr){
+  const heading=getVal('f-heading'), source=getVal('f-source');
+  const items=[1,2,3,4,5].map(i=>getVal('f-item-'+i)).filter(x=>x);
+
+  if(heading){
+    const hFont=`700 ${Math.round(44*s)}px 'Tiro Devanagari Sanskrit',serif`;
+    const hl=wrapLines(ctx,heading,hFont,W*0.84);
+    const hLH=56*s;
+    sg(c.glow,25);
+    ctx.font=hFont; ctx.fillStyle=c.gold;
+    hl.forEach((l,i)=>ctx.fillText(l,W/2,y+hLH*0.82+i*hLH));
+    y+=hl.length*hLH+12*s; cg();
+  }
+
+  if(items.length){
+    gl(80*s,W-80*s,y,0.25); y+=16*s;
+    const iFont=`400 ${Math.round(28*s)}px 'Tiro Devanagari Sanskrit',serif`;
+    const iLH=38*s;
+    const CIRC_R=22*s, CIRC_CX=72*s;
+    const TEXT_X=CIRC_CX+CIRC_R+16*s;
+    const TEXT_W=W-TEXT_X-44*s;
+    const GAP=8*s;
+
+    items.forEach((item,idx)=>{
+      const il=wrapLines(ctx,item,iFont,TEXT_W);
+      const rowH=il.length*iLH+24*s;
+      const rowY=y;
+      const midY=rowY+rowH/2;
+
+      // Row bg
+      ctx.fillStyle='rgba(0,0,0,0.35)';
+      rr(44*s,rowY,W-88*s,rowH,12*s); ctx.fill();
+      ctx.strokeStyle=c.gold+'20'; ctx.lineWidth=1.5*s;
+      rr(44*s,rowY,W-88*s,rowH,12*s); ctx.stroke();
+      // Left bar
+      ctx.fillStyle=c.acc+'77';
+      ctx.fillRect(44*s,rowY+rowH*0.15,4*s,rowH*0.7);
+      // Number circle
+      ctx.beginPath(); ctx.arc(CIRC_CX,midY,CIRC_R,0,Math.PI*2);
+      ctx.fillStyle=c.acc+'33'; ctx.fill();
+      ctx.strokeStyle=c.gold+'88'; ctx.lineWidth=2*s; ctx.stroke();
+      sg(null,0);
+      ctx.textAlign='center';
+      ctx.font=`700 ${Math.round(26*s)}px 'Philosopher',serif`;
+      ctx.fillStyle=c.gold;
+      ctx.fillText(idx+1,CIRC_CX,midY+9*s);
+      // Item text
+      ctx.textAlign='left';
+      ctx.font=iFont; ctx.fillStyle=c.text+'EE';
+      const textStartY=midY-(il.length*iLH)/2+iLH*0.78;
+      il.forEach((l,li)=>ctx.fillText(l,TEXT_X,textStartY+li*iLH));
+      ctx.textAlign='center';
+      y+=rowH+GAP;
+    });
+    cg();
+  }
+
+  if(source){
+    y+=6*s;
+    ctx.font=`italic 400 ${Math.round(22*s)}px 'EB Garamond',serif`;
+    ctx.fillStyle=c.sub+'77';
+    ctx.fillText('— '+source+' —',W/2,y+22*s);
+  }
+}
+// ── UPAY ──
+function drawUpay(ctx,W,H,y,s,c,sg,cg,gl,rr){
+  const problem=getVal('f-problem'), body=getVal('f-body'), note=getVal('f-note');
+  if(problem){
+    // Problem header bar
+    const pFS=Math.round(38*s);
+    const pl=wrapLines(ctx,problem,`700 ${pFS}px 'Tiro Devanagari Sanskrit',serif`,W*0.76);
+    const pH=pl.length*pFS*1.4+48*s;
+    ctx.fillStyle=c.acc+'28';
+    rr(40*s,y,W-80*s,pH,14*s); ctx.fill();
+    ctx.strokeStyle=c.acc+'66'; ctx.lineWidth=1.5*s;
+    rr(40*s,y,W-80*s,pH,14*s); ctx.stroke();
+    sg(c.glow,20);
+    ctx.font=`700 ${pFS}px 'Tiro Devanagari Sanskrit',serif`;
+    ctx.fillStyle=c.gold;
+    pl.forEach((l,i)=>ctx.fillText(l,W/2,y+pFS*1.1+i*pFS*1.4));
+    y+=pH+28*s; cg();
+  }
+  if(body){
+    // Numbered remedy steps
+    const steps=body.split('\n').filter(x=>x.trim());
+    steps.forEach((step,i)=>{
+      const bl=wrapLines(ctx,step,`400 ${Math.round(32*s)}px 'Tiro Devanagari Sanskrit',serif`,W*0.74);
+      const rH=bl.length*42*s+40*s;
+      const rY=y;
+      ctx.fillStyle='rgba(0,0,0,0.38)';
+      rr(40*s,rY,W-80*s,rH,12*s); ctx.fill();
+      ctx.strokeStyle=c.gold+'20'; ctx.lineWidth=1.5*s;
+      rr(40*s,rY,W-80*s,rH,12*s); ctx.stroke();
+      // Number circle
+      const cx=88*s, cy=rY+rH/2, cr=28*s;
+      ctx.beginPath(); ctx.arc(cx,cy,cr,0,Math.PI*2);
+      ctx.fillStyle=c.acc+'44'; ctx.fill();
+      ctx.strokeStyle=c.gold+'88'; ctx.lineWidth=2*s; ctx.stroke();
+      sg(null,0);
+      ctx.font=`700 ${Math.round(28*s)}px 'Philosopher',serif`;
+      ctx.fillStyle=c.gold;
+      ctx.fillText(i+1,cx,cy+10*s);
+      ctx.font=`400 ${Math.round(32*s)}px 'Tiro Devanagari Sanskrit',serif`;
+      ctx.fillStyle=c.text+'EE';
+      const textX=130*s, textY=rY+rH/2-(bl.length*42*s)/2+32*s;
+      ctx.textAlign='left';
+      bl.forEach((l,j)=>ctx.fillText(l,textX,textY+j*42*s));
+      ctx.textAlign='center';
+      y+=rH+10*s; cg();
+    });
+  }
+  if(note){
+    y+=10*s;
+    ctx.font=`italic 400 ${Math.round(26*s)}px 'EB Garamond',serif`;
+    ctx.fillStyle=c.gold+'AA';
+    ctx.fillText('⭐ '+note,W/2,y+26*s);
+  }
+}
+
+// ── PRASHNA ──
+function drawPrashna(ctx,W,H,y,s,c,sg,cg,gl,rr){
+  const q=getVal('f-question'), a=getVal('f-answer');
+  if(q){
+    // Question text first, then ? after
+    const ql=wrapLines(ctx,q,`700 ${Math.round(44*s)}px 'Tiro Devanagari Sanskrit',serif`,W*0.82);
+    const qH=ql.length*58*s+48*s;
+    ctx.fillStyle='rgba(0,0,0,0.4)';
+    rr(40*s,y,W-80*s,qH,14*s); ctx.fill();
+    ctx.strokeStyle=c.acc+'55'; ctx.lineWidth=2*s;
+    rr(40*s,y,W-80*s,qH,14*s); ctx.stroke();
+    sg(c.glow,18);
+    ctx.font=`700 ${Math.round(44*s)}px 'Tiro Devanagari Sanskrit',serif`;
+    ctx.fillStyle=c.gold;
+    ql.forEach((l,i)=>ctx.fillText(l,W/2,y+48*s+i*58*s));
+    y+=qH+16*s; cg();
+    // Big ? after the question
+    sg(c.glow,60);
+    ctx.font=`700 ${Math.round(110*s)}px 'Philosopher',serif`;
+    ctx.fillStyle=c.acc+'66';
+    ctx.fillText('?',W/2,y+100*s);
+    y+=120*s; cg();
+  }
+  if(a){
+    gl(80*s,W-80*s,y,0.35); y+=30*s;
+    const al=wrapLines(ctx,a,`400 ${Math.round(36*s)}px 'Tiro Devanagari Sanskrit',serif`,W*0.80);
+    const aH=al.length*50*s+48*s;
+    ctx.fillStyle='rgba(0,0,0,0.32)';
+    rr(50*s,y,W-100*s,aH,14*s); ctx.fill();
+    ctx.strokeStyle=c.gold+'25'; ctx.lineWidth=1.5*s;
+    rr(50*s,y,W-100*s,aH,14*s); ctx.stroke();
+    sg(null,0);
+    ctx.font=`400 ${Math.round(36*s)}px 'Tiro Devanagari Sanskrit',serif`;
+    ctx.fillStyle=c.text+'EE';
+    al.forEach((l,i)=>ctx.fillText(l,W/2,y+44*s+i*50*s));
+    cg();
+  }
+}
+
+// ── MANTRA ──
+function drawMantra(ctx,W,H,y,s,c,sg,cg,gl,rr){
+  const mantra=getVal('f-mantra'), artha=getVal('f-artha');
+  if(mantra){
+    sg(c.glow,50);
+    ctx.font=`700 ${Math.round(62*s)}px 'Tiro Devanagari Sanskrit',serif`;
+    ctx.fillStyle=c.gold;
+    const ml=wrapLines(ctx,mantra,`700 ${Math.round(62*s)}px 'Tiro Devanagari Sanskrit',serif`,W*0.84);
+    ml.forEach((l,i)=>ctx.fillText(l,W/2,y+66*s+i*76*s));
+    y+=ml.length*76*s+32*s; cg();
+  }
+  if(artha){
+    // अर्थ strip
+    gl(70*s,W-70*s,y,0.4); y+=10*s;
+    ctx.fillStyle=c.acc+'22';
+    ctx.fillRect(0,y,W,38*s);
+    sg(c.acc+'99',15);
+    ctx.font=`400 ${Math.round(22*s)}px 'Tiro Devanagari Sanskrit',serif`;
+    ctx.fillStyle=c.acc+'CC';
+    ctx.fillText('— अर्थ —',W/2,y+28*s);
+    y+=46*s;
+    gl(70*s,W-70*s,y,0.4); y+=24*s; cg();
+    const al=wrapLines(ctx,artha,`400 ${Math.round(36*s)}px 'Tiro Devanagari Sanskrit',serif`,W*0.80);
+    const aH=al.length*50*s+44*s;
+    ctx.fillStyle='rgba(0,0,0,0.38)';
+    rr(50*s,y,W-100*s,aH,14*s); ctx.fill();
+    sg(null,0);
+    ctx.font=`400 ${Math.round(36*s)}px 'Tiro Devanagari Sanskrit',serif`;
+    ctx.fillStyle=c.text+'EE';
+    al.forEach((l,i)=>ctx.fillText(l,W/2,y+42*s+i*50*s));
+    cg();
+  }
+}
+
+// ── RASHI ──
+function drawRashi(ctx,W,H,y,s,c,sg,cg,gl,rr){
+  const rashi=getVal('f-rashi'), body=getVal('f-body'), keyword=getVal('f-keyword');
+  if(rashi){
+    sg(c.glow,60);
+    ctx.font=`700 ${Math.round(82*s)}px 'Tiro Devanagari Sanskrit',serif`;
+    ctx.fillStyle=c.gold;
+    ctx.fillText(rashi,W/2,y+82*s);
+    y+=100*s; cg();
+  }
+  if(keyword){
+    // Keyword pills
+    const keys=keyword.split('•').map(k=>k.trim()).filter(Boolean);
+    const pillH=44*s, gap=14*s;
+    let px=0;
+    ctx.font=`400 ${Math.round(24*s)}px 'Philosopher',serif`;
+    const totalW=keys.reduce((a,k)=>a+ctx.measureText(k).width+50*s,0)+(keys.length-1)*gap;
+    let startX=(W-Math.min(totalW,W-80*s))/2;
+    keys.forEach(k=>{
+      const kW=ctx.measureText(k).width+50*s;
+      ctx.fillStyle=c.acc+'33';
+      rr(startX,y,kW,pillH,pillH/2); ctx.fill();
+      ctx.strokeStyle=c.gold+'55'; ctx.lineWidth=1.5*s;
+      rr(startX,y,kW,pillH,pillH/2); ctx.stroke();
+      ctx.fillStyle=c.text+'CC';
+      ctx.fillText(k,startX+kW/2,y+pillH*0.68);
+      startX+=kW+gap;
+    });
+    y+=pillH+24*s;
+  }
+  if(body){
+    gl(80*s,W-80*s,y,0.3); y+=28*s;
+    const bl=wrapLines(ctx,body,`400 ${Math.round(36*s)}px 'Tiro Devanagari Sanskrit',serif`,W*0.80);
+    const bH=bl.length*50*s+44*s;
+    ctx.fillStyle='rgba(0,0,0,0.35)';
+    rr(50*s,y,W-100*s,bH,14*s); ctx.fill();
+    ctx.strokeStyle=c.gold+'22'; ctx.lineWidth=1.5*s;
+    rr(50*s,y,W-100*s,bH,14*s); ctx.stroke();
+    sg(null,0);
+    ctx.font=`400 ${Math.round(36*s)}px 'Tiro Devanagari Sanskrit',serif`;
+    ctx.fillStyle=c.text+'EE';
+    bl.forEach((l,i)=>ctx.fillText(l,W/2,y+42*s+i*50*s));
+    cg();
+  }
+}
+
+// ── TATHYA ──
+function drawTathya(ctx,W,H,y,s,c,sg,cg,gl,rr){
+  const num=getVal('f-number'), heading=getVal('f-heading'), body=getVal('f-body');
+  if(num){
+    // Giant number
+    sg(c.glow,80);
+    ctx.font=`700 ${Math.round(160*s)}px 'Philosopher',serif`;
+    ctx.fillStyle=c.acc+'33';
+    ctx.fillText(num,W/2,y+140*s);
+    y+=150*s; cg();
+  }
+  if(heading){
+    sg(c.glow,25);
+    ctx.font=`700 ${Math.round(48*s)}px 'Tiro Devanagari Sanskrit',serif`;
+    ctx.fillStyle=c.gold;
+    const hl=wrapLines(ctx,heading,`700 ${Math.round(48*s)}px 'Tiro Devanagari Sanskrit',serif`,W*0.82);
+    hl.forEach((l,i)=>ctx.fillText(l,W/2,y+52*s+i*60*s));
+    y+=hl.length*60*s+20*s; cg();
+  }
+  if(body){
+    gl(80*s,W-80*s,y,0.3); y+=26*s;
+    const bl=wrapLines(ctx,body,`400 ${Math.round(34*s)}px 'Tiro Devanagari Sanskrit',serif`,W*0.78);
+    const bH=bl.length*48*s+44*s;
+    ctx.fillStyle='rgba(0,0,0,0.35)';
+    rr(50*s,y,W-100*s,bH,14*s); ctx.fill();
+    ctx.strokeStyle=c.gold+'22'; ctx.lineWidth=1.5*s;
+    rr(50*s,y,W-100*s,bH,14*s); ctx.stroke();
+    sg(null,0);
+    ctx.font=`400 ${Math.round(34*s)}px 'Tiro Devanagari Sanskrit',serif`;
+    ctx.fillStyle=c.text+'EE';
+    bl.forEach((l,i)=>ctx.fillText(l,W/2,y+42*s+i*48*s));
+    cg();
+  }
+}
+
+// ── VIEW SWITCHER ──
+let _view='static';
+function setView(v,btn){
+  _view=v;
+  document.querySelectorAll('#view-static,#view-anim').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('static-wrap').style.display=v==='static'?'block':'none';
+  document.getElementById('anim-wrap').style.display=v==='anim'?'block':'none';
+  document.getElementById('static-actions').style.display=v==='static'?'grid':'none';
+  document.getElementById('anim-actions').style.display=v==='anim'?'block':'none';
+  document.getElementById('preview-label').textContent=v==='static'?'Preview — 9:16':'Animation Preview — 9:16';
+  if(v==='anim'){vcReset();}else{renderCard();}
+}
+
+// ── ANIMATION ENGINE ──
+let _vt=0,_vraf=null,_vplaying=false,_vparticles=[];
+const VC_DUR=24;
+
+function vcInitParticles(){
+  const cv=document.getElementById('anim-cv');
+  if(!cv)return;
+  _vparticles=[];
+  for(let i=0;i<55;i++) _vparticles.push({
+    x:Math.random()*cv.width, y:Math.random()*cv.height,
+    vy:-(0.3+Math.random()*0.7), vx:(Math.random()-0.5)*0.3,
+    size:1+Math.random()*2.5, op:0.2+Math.random()*0.6, ph:Math.random()*Math.PI*2
+  });
+}
+
+function vcSetupCanvas(){
+  const cv=document.getElementById('anim-cv'); if(!cv)return null;
+  if(cv.width!==540||cv.height!==960){
+    cv.width=540; cv.height=960;
+    cv.style.width='100%'; cv.style.height='100%';
+  }
+  return cv.getContext('2d');
+}
+
+function vcEase(t){return 1-(1-Math.min(Math.max(t,0),1))*(1-Math.min(Math.max(t,0),1));}
+
+function vcPlay(){
+  const btn=document.getElementById('vc-play-btn');
+  if(_vplaying){_vplaying=false;cancelAnimationFrame(_vraf);btn.textContent='▶ Play immediately';return;}
+  vcInitParticles();
+  _vt=0;_vplaying=true;btn.textContent='⏸ Pause';
+  const start=performance.now();
+  function loop(now){
+    _vt=Math.min((now-start)/1000,VC_DUR);
+    try{vcDrawFrame(_vt);}catch(e){console.error('VC anim error:',e.message);_vplaying=false;btn.textContent='▶ Play immediately';return;}
+    if(_vt<VC_DUR&&_vplaying){_vraf=requestAnimationFrame(loop);}
+    else{_vplaying=false;btn.textContent='▶ Play immediately';}
+  }
+  _vraf=requestAnimationFrame(loop);
+}
+
+function vcReset(){
+  _vplaying=false;cancelAnimationFrame(_vraf);
+  document.getElementById('vc-play-btn').textContent='▶ Play immediately';
+  _vt=0;vcInitParticles();vcDrawFrame(0);
+}
+
+function vcCountdown(secs){
+  _vplaying=false;cancelAnimationFrame(_vraf);
+  vcReset();
+  let rem=secs;
+  const ov=document.getElementById('anim-cd-overlay');
+  function tick(){
+    if(rem<=0){ov.innerHTML='';vcPlay();return;}
+    ov.innerHTML=`<div style="background:rgba(0,0,0,0.75);border-radius:16px;padding:20px 32px;text-align:center;color:#FFD860;font-family:'Philosopher',serif">
+      <div style="font-size:14px;letter-spacing:2px;margin-bottom:8px">📱 Screen recorder ON</div>
+      <div style="font-size:64px;font-weight:700;line-height:1">${rem}</div>
+    </div>`;
+    rem--;setTimeout(tick,1000);
+  }
+  tick();
+}
+
+function vcDrawFrame(t){
+  const ctx=vcSetupCanvas(); if(!ctx)return;
+  const c=THEMES[_theme];
+  const W=ctx.canvas.width, H=ctx.canvas.height, s=W/1080;
+
+  function fe(t,s,e){return 1-(1-Math.min(Math.max((t-s)/(e-s),0),1))*(1-Math.min(Math.max((t-s)/(e-s),0),1));}
+  function sg2(col,sz){ctx.shadowColor=col;ctx.shadowBlur=sz*s;ctx.shadowOffsetY=2*s;}
+  function cg2(){ctx.shadowColor='transparent';ctx.shadowBlur=0;ctx.shadowOffsetY=0;}
+  function gl2(x1,x2,y,op){
+    const g=ctx.createLinearGradient(x1,y,x2,y);
+    g.addColorStop(0,'transparent');g.addColorStop(0.5,c.gold+Math.round(op*255).toString(16).padStart(2,'0'));g.addColorStop(1,'transparent');
+    ctx.strokeStyle=g;ctx.lineWidth=1.5*s;ctx.beginPath();ctx.moveTo(x1,y);ctx.lineTo(x2,y);ctx.stroke();
+  }
+  function rr2(x,y,w,h,r){
+    ctx.beginPath();ctx.moveTo(x+r,y);ctx.lineTo(x+w-r,y);ctx.arcTo(x+w,y,x+w,y+r,r);ctx.lineTo(x+w,y+h-r);ctx.arcTo(x+w,y+h,x+w-r,y+h,r);ctx.lineTo(x+r,y+h);ctx.arcTo(x,y+h,x,y+h-r,r);ctx.lineTo(x,y+r);ctx.arcTo(x,y,x+r,y,r);ctx.closePath();
+  }
+  function wl(text,font,maxW){ctx.font=font;const words=text.split(/\s+/);const lines=[];let cur='';words.forEach(w=>{const tt=cur?cur+' '+w:w;if(ctx.measureText(tt).width>maxW&&cur){lines.push(cur);cur=w;}else cur=tt;});if(cur)lines.push(cur);return lines;}
+
+  // Background
+  const bg=ctx.createRadialGradient(W/2,H*0.3,0,W/2,H*0.3,H*0.9);
+  bg.addColorStop(0,c.bg1);bg.addColorStop(1,c.bg2);
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+  const rg=ctx.createRadialGradient(W/2,H*0.3,0,W/2,H*0.3,W*0.7);
+  const pulse=0.10+0.06*Math.sin(t*1.4);
+  rg.addColorStop(0,c.glow+Math.round(pulse*255).toString(16).padStart(2,'0'));rg.addColorStop(1,'transparent');
+  ctx.fillStyle=rg;ctx.fillRect(0,0,W,H);
+
+  // Particles
+  _vparticles.forEach(p=>{
+    if(_vplaying){p.y+=p.vy;p.x+=p.vx;if(p.y<-5){p.y=H+5;p.x=Math.random()*W;}}
+    const fl=0.5+0.5*Math.sin(t*3+p.ph);
+    ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+    ctx.fillStyle=c.gold+Math.round(p.op*fl*160).toString(16).padStart(2,'0');ctx.fill();
+  });
+
+  // Sacred geometry rings
+  if(t>0.8){
+    const rp=fe(t,0.8,4.0);
+    ctx.save();ctx.translate(W/2,H*0.36);ctx.rotate(t*0.07);
+    ctx.strokeStyle=c.gold+'44';ctx.lineWidth=1.5*s;
+    ctx.beginPath();ctx.arc(0,0,W*0.42,-Math.PI/2,-Math.PI/2+rp*Math.PI*2);ctx.stroke();
+    ctx.rotate(-t*0.14);ctx.strokeStyle=c.acc+'33';ctx.lineWidth=1*s;
+    ctx.beginPath();ctx.arc(0,0,W*0.34,-Math.PI/2+rp*Math.PI*2,-Math.PI/2,true);ctx.stroke();
+    ctx.restore();
+  }
+
+  // Ripple on reveal
+  const rpT=t-2.0;
+  if(rpT>0&&rpT<2.5){
+    const rp2=rpT/2.5;
+    ctx.beginPath();ctx.arc(W/2,H*0.36,W*(0.08+rp2*0.45),0,Math.PI*2);
+    ctx.strokeStyle=c.glow+Math.round((1-rp2)*70).toString(16).padStart(2,'0');
+    ctx.lineWidth=(1-rp2)*5*s;ctx.stroke();
+  }
+
+  // Corner ornaments
+  const co=44*s;ctx.strokeStyle=c.gold+'44';ctx.lineWidth=2*s;
+  [[0,0,1,1],[W,0,-1,1],[0,H,1,-1],[W,H,-1,-1]].forEach(([cx,cy,sx,sy])=>{
+    ctx.beginPath();ctx.moveTo(cx+sx*co,cy);ctx.lineTo(cx,cy);ctx.lineTo(cx,cy+sy*co);ctx.stroke();
+  });
+
+  ctx.textAlign='center';ctx.textBaseline='alphabetic';
+  const PAD=70*s;
+  let y=H*0.05;
+
+  // Brand
+  ctx.globalAlpha=fe(t,0,1.0);
+  sg2(c.glow,20);
+  ctx.font=`400 ${Math.round(20*s)}px 'Tiro Devanagari Sanskrit',serif`;ctx.fillStyle=c.sub+'BB';
+  ctx.fillText('॥  विधि चक्र  ॥',W/2,y);y+=30*s;
+  gl2(PAD,W-PAD,y,0.45);y+=28*s;
+  ctx.font=`${Math.round(50*s)}px 'Tiro Devanagari Sanskrit',serif`;ctx.fillStyle=c.gold;
+  const symPulse=1+0.06*Math.sin(t*2.5);
+  ctx.save();ctx.translate(W/2,y+38*s);ctx.scale(symPulse,symPulse);ctx.fillText(c.sym,0,0);ctx.restore();
+  y+=58*s;gl2(PAD,W-PAD,y,0.45);y+=28*s;
+  ctx.globalAlpha=1;cg2();
+
+  // Category pill
+  const catA=fe(t,0.6,1.4);
+  ctx.globalAlpha=catA;
+  const catFS=Math.round(22*s);ctx.font=`400 ${catFS}px 'Tiro Devanagari Sanskrit',serif`;
+  const catW=ctx.measureText(TYPES[_type].label).width+70*s,catH=42*s,catX=W/2-catW/2;
+  ctx.fillStyle=c.acc+'22';rr2(catX,y,catW,catH,catH/2);ctx.fill();
+  ctx.strokeStyle=c.acc+'77';ctx.lineWidth=1.5*s;rr2(catX,y,catW,catH,catH/2);ctx.stroke();
+  sg2(c.glow,14);ctx.fillStyle=c.gold+'EE';ctx.fillText(TYPES[_type].label,W/2,y+catH*0.68);
+  y+=catH+26*s;ctx.globalAlpha=1;cg2();
+
+  // Content — type-specific animated reveal
+  const fields=getAnimFields();
+  fields.forEach((f,fi)=>{
+    if(!f.text)return;
+    const startT=1.5+fi*1.2;
+    const lineA=fe(t,startT,startT+0.8);
+    if(lineA<=0)return;
+    ctx.globalAlpha=lineA;
+
+    // Light streak on reveal
+    const streakT=Math.min(Math.max((t-startT)/0.5,0),1);
+    if(streakT<1){
+      const sx=W/2+(-W*0.5+streakT*W);
+      const sg3=ctx.createLinearGradient(sx-100*s,0,sx+100*s,0);
+      sg3.addColorStop(0,'transparent');sg3.addColorStop(0.5,c.gold+'44');sg3.addColorStop(1,'transparent');
+      ctx.fillStyle=sg3;ctx.fillRect(0,f.y*H-60*s,W,70*s);
+    }
+
+    if(f.isLabel){
+      gl2(80*s,W-80*s,f.y*H,0.35);
+      sg2(c.glow,14);ctx.font=`400 ${Math.round(20*s)}px 'Tiro Devanagari Sanskrit',serif`;
+      ctx.fillStyle=c.acc+'CC';ctx.fillText(f.text,W/2,f.y*H+26*s);cg2();
+    } else {
+      // Panel + text
+      const lines=wl(f.text,`${f.bold?'700':'400'} ${Math.round(f.fs*s)}px 'Tiro Devanagari Sanskrit',serif`,W*0.80);
+      const lh=f.fs*1.25*s;
+      const panH=lines.length*lh+36*s;
+      ctx.fillStyle='rgba(0,0,0,0.38)';rr2(50*s,f.y*H,W-100*s,panH,12*s);ctx.fill();
+      ctx.strokeStyle=c.gold+(f.bold?'33':'22');ctx.lineWidth=1.5*s;rr2(50*s,f.y*H,W-100*s,panH,12*s);ctx.stroke();
+      sg2(f.bold?c.glow:null,f.bold?20:0);
+      ctx.font=`${f.bold?'700':'400'} ${Math.round(f.fs*s)}px 'Tiro Devanagari Sanskrit',serif`;
+      ctx.fillStyle=f.bold?c.gold:c.text+'EE';
+      lines.forEach((l,li)=>{
+        const la=fe(t,startT+0.3+li*0.25,startT+0.6+li*0.25);
+        ctx.globalAlpha=la;ctx.fillText(l,W/2,f.y*H+32*s+li*lh);
+      });
+      ctx.globalAlpha=lineA;cg2();
+    }
+    ctx.globalAlpha=1;
+  });
+
+  // Footer
+  const footA=fe(t,VC_DUR-4,VC_DUR-2);
+  ctx.globalAlpha=footA;
+  gl2(PAD,W-PAD,H*0.895,0.3);
+  sg2(c.acc+'88',35);
+  ctx.font=`400 ${Math.round(20*s)}px 'Tiro Devanagari Sanskrit',serif`;ctx.fillStyle=c.sub+'99';
+  ctx.fillText('उपाय • विधि • शक्ति',W/2,H*0.912);
+  ctx.fillStyle=c.gold;ctx.font=`400 ${Math.round(46*s)}px 'Tiro Devanagari Sanskrit',serif`;
+  ctx.fillText('विधि चक्र',W/2,H*0.948);
+  ctx.fillStyle=c.sub+'55';ctx.font=`400 ${Math.round(17*s)}px 'Philosopher',serif`;
+  ctx.fillText('VIDHI CHAKRA',W/2,H*0.964);
+  ctx.globalAlpha=1;cg2();
+}
+
+// Map current type inputs to animation fields with y positions
+// For gyan we calculate y dynamically to avoid overlap
+function getAnimFields(){
+  if(_type==='gyan'){
+    const heading=getVal('f-heading'), source=getVal('f-source');
+    const items=[1,2,3,4,5].map(i=>getVal('f-item-'+i)).filter(x=>x);
+    const fields=[];
+    let yFrac=0.24;
+    if(heading){
+      const estLines=Math.max(1,Math.ceil(heading.length/16));
+      fields.push({text:heading,y:yFrac,fs:40,bold:true});
+      yFrac+=estLines*0.058+0.025;
+    }
+    items.forEach((item,idx)=>{
+      const estLines=Math.max(1,Math.ceil(item.length/20));
+      fields.push({text:item,y:yFrac,fs:26,bold:false,num:idx+1});
+      yFrac+=estLines*0.046+0.030;
+    });
+    if(source) fields.push({text:'— '+source+' —',y:Math.min(yFrac,0.86),fs:18,bold:false});
+    return fields;
+  }
+  if(_type==='upay') return[
+    {text:getVal('f-problem'),y:0.26,fs:42,bold:true},
+    {text:getVal('f-body'),y:0.42,fs:32,bold:false},
+    {text:getVal('f-note'),y:0.74,fs:24,bold:false},
+  ];
+  if(_type==='prashna') return[
+    {text:getVal('f-question'),y:0.24,fs:42,bold:true},
+    {text:'?',y:0.50,fs:90,bold:true},
+    {text:getVal('f-answer'),y:0.60,fs:34,bold:false},
+  ];
+  if(_type==='mantra') return[
+    {text:getVal('f-mantra'),y:0.26,fs:56,bold:true},
+    {text:'— अर्थ —',y:0.52,fs:20,bold:false,isLabel:true},
+    {text:getVal('f-artha'),y:0.56,fs:34,bold:false},
+  ];
+  if(_type==='rashi') return[
+    {text:getVal('f-rashi'),y:0.24,fs:70,bold:true},
+    {text:getVal('f-keyword'),y:0.44,fs:28,bold:false},
+    {text:getVal('f-body'),y:0.54,fs:34,bold:false},
+  ];
+  if(_type==='tathya') return[
+    {text:getVal('f-number'),y:0.22,fs:110,bold:true},
+    {text:getVal('f-heading'),y:0.46,fs:44,bold:true},
+    {text:getVal('f-body'),y:0.60,fs:32,bold:false},
+  ];
+  return[];
+}
+
+function vcSaveFrame(){
+  const cv=document.getElementById('anim-cv'); if(!cv)return;
+  const win=window.open('','_blank');
+  if(win){
+    win.document.write('<html><head><title>विधि चक्र Frame</title><style>body{margin:0;background:#000;display:flex;flex-direction:column;align-items:center;padding:16px;font-family:sans-serif;color:#FFD860}img{max-width:100%;border-radius:8px}p{font-size:13px;margin-top:12px;text-align:center;opacity:0.7}</style></head><body>');
+    win.document.write('<p>📱 Long-press image → Save to Photos</p>');
+    win.document.write('<img src="'+cv.toDataURL('image/png')+'"/>');
+    win.document.write('</body></html>');
+    win.document.close();
+  }
+}
+
+// ════════════════════════════════════════════
+// WEBM RECORDER
+// ════════════════════════════════════════════
+let _recorder=null, _recChunks=[], _recPlaying=false;
+
+function vcStartRecord(){
+  const cv=document.getElementById('anim-cv');
+  const btn=document.getElementById('vc-rec-btn');
+  const status=document.getElementById('vc-rec-status');
+
+  // If already recording — stop
+  if(_recorder&&_recorder.state==='recording'){
+    _recorder.stop();
+    return;
+  }
+
+  // Check support
+  if(!cv.captureStream){
+    status.textContent='❌ WebM not supported on this browser — use screen recorder instead';
+    status.style.color='var(--red)';
+    return;
+  }
+
+  // Start fresh animation
+  vcReset();
+  _recChunks=[];
+
+  try{
+    const stream=cv.captureStream(30);
+    const mimeType=MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+      ?'video/webm;codecs=vp9'
+      :MediaRecorder.isTypeSupported('video/webm')
+      ?'video/webm':'';
+
+    if(!mimeType){
+      status.textContent='❌ WebM encoding not supported — use screen recorder';
+      status.style.color='var(--red)';
+      return;
+    }
+
+    _recorder=new MediaRecorder(stream,{mimeType,videoBitsPerSecond:8000000});
+
+    _recorder.ondataavailable=e=>{if(e.data&&e.data.size>0)_recChunks.push(e.data);};
+
+    _recorder.onstop=()=>{
+      btn.textContent='⏺ Record WebM';
+      btn.style.color='';
+      status.textContent='✓ Processing...';
+      const blob=new Blob(_recChunks,{type:'video/webm'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url;
+      a.download=`vidhichakra-${_type}-${Date.now()}.webm`;
+      document.body.appendChild(a);a.click();
+      setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},500);
+      status.textContent='✅ Downloaded! Open in gallery or share directly.';
+      status.style.color='var(--green)';
+    };
+
+    _recorder.start(100); // collect data every 100ms
+    btn.textContent='⏹ Stop & Download';
+    btn.style.color='var(--red)';
+    status.textContent='🔴 Recording... play the animation now';
+    status.style.color='var(--red)';
+
+    // Auto-play animation
+    vcPlay();
+
+    // Auto-stop when animation ends
+    const autoStop=setInterval(()=>{
+      if(!_vplaying&&_recorder&&_recorder.state==='recording'){
+        _recorder.stop();
+        clearInterval(autoStop);
+      }
+    },500);
+
+  }catch(e){
+    status.textContent='❌ Error: '+e.message;
+    status.style.color='var(--red)';
+  }
+}
+
+// ════════════════════════════════════════════
+// SMART PASTE
+// ════════════════════════════════════════════
+function openSmartPaste(){
+  document.getElementById('sp-modal').style.display='block';
+  document.getElementById('sp-input').focus();
+}
+function closeSmartPaste(){
+  document.getElementById('sp-modal').style.display='none';
+}
+
+function smartParseText(raw){
+  const lines=raw.split('\n').map(l=>l.trim()).filter(l=>l);
+  const result={heading:'',items:[],source:''};
+
+  // Nepali/English number patterns and bullet patterns
+  const neNumMap={'१':'1','२':'2','३':'3','४':'4','५':'5','६':'6','७':'7','८':'8','९':'9'};
+  const isNumberedLine=l=>{
+    // १. or 1. or १) or 1) or • or - or – at start
+    return /^[१२३४५६७८९1-5][\.\)]\s/.test(l)||/^[•\-–]\s/.test(l);
+  };
+  const stripNum=l=>l.replace(/^[१२३४५६७८९1-5][\.\)]\s*/,'').replace(/^[•\-–]\s*/,'').trim();
+  const isSource=l=>/^(स्रोत|source|ref|सन्दर्भ)\s*[:\-]/i.test(l);
+
+  lines.forEach(l=>{
+    if(isSource(l)){
+      result.source=l.replace(/^(स्रोत|source|ref|सन्दर्भ)\s*[:\-]\s*/i,'').trim();
+    } else if(isNumberedLine(l)){
+      if(result.items.length<5) result.items.push(stripNum(l));
+    } else if(!result.heading){
+      // First non-numbered, non-source line = heading
+      // Unless it looks like body text (>60 chars)
+      if(l.length<=80) result.heading=l;
+      else if(result.items.length<5) result.items.push(l); // long line = item
+    } else {
+      // Additional plain lines go to items if we have room
+      if(result.items.length<5) result.items.push(l);
+    }
+  });
+
+  return result;
+}
+
+function smartParsePeview(){
+  const raw=document.getElementById('sp-input').value;
+  if(!raw.trim()) return;
+  const r=smartParseText(raw);
+  const pv=document.getElementById('sp-preview');
+  pv.style.display='block';
+  pv.innerHTML=`
+    <div style="color:var(--gold);margin-bottom:4px">Heading:</div>
+    <div style="color:var(--text);margin-bottom:8px">${r.heading||'<span style="color:var(--dim)">— not detected —</span>'}</div>
+    <div style="color:var(--gold);margin-bottom:4px">Items:</div>
+    ${r.items.length?r.items.map((item,i)=>`<div style="color:var(--text);margin-bottom:3px"><span style="color:var(--acc)">${i+1}.</span> ${item}</div>`).join(''):'<span style="color:var(--dim)">— none detected —</span>'}
+    ${r.source?`<div style="color:var(--gold);margin-top:8px;margin-bottom:4px">Source:</div><div style="color:var(--text)">${r.source}</div>`:''}
+  `;
+}
+
+function smartPasteApply(){
+  const raw=document.getElementById('sp-input').value;
+  if(!raw.trim()) return;
+  const r=smartParseText(raw);
+
+  // Switch to gyan type first (numbered items)
+  const gyanBtn=document.querySelector('[onclick="setType(\'gyan\',this)"]');
+  if(_type!=='gyan'&&gyanBtn){ setType('gyan',gyanBtn); }
+
+  // Fill fields after buildInputs has run
+  setTimeout(()=>{
+    if(r.heading){const el=document.getElementById('f-heading');if(el)el.value=r.heading;}
+    r.items.forEach((item,i)=>{const el=document.getElementById('f-item-'+(i+1));if(el)el.value=item;});
+    if(r.source){const el=document.getElementById('f-source');if(el)el.value=r.source;}
+    renderCard();
+    closeSmartPaste();
+    // Clear remaining item fields
+    for(let i=r.items.length+1;i<=5;i++){const el=document.getElementById('f-item-'+i);if(el)el.value='';}
+  },100);
+}
+
+// ── INIT ──
+buildInputs();
+buildSuggestions();
+window.addEventListener('load',()=>{ setTimeout(renderCard,200); });
+window.addEventListener('resize',()=>{ if(_view==='static')renderCard();else vcReset(); });
+</script>
+</body>
+</html>
