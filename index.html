@@ -1495,75 +1495,109 @@ function vcStartRecord(){
   const btn=document.getElementById('vc-rec-btn');
   const status=document.getElementById('vc-rec-status');
 
-  // If already recording — stop
+  // If already recording — stop manually
   if(_recorder&&_recorder.state==='recording'){
+    _vplaying=false;
+    cancelAnimationFrame(_vraf);
     _recorder.stop();
+    btn.textContent='⏺ Record WebM';
+    btn.style.color='';
     return;
   }
 
-  // Check support
   if(!cv.captureStream){
-    status.textContent='❌ WebM not supported on this browser — use screen recorder instead';
+    status.textContent='❌ Not supported — use screen recorder';
     status.style.color='var(--red)';
     return;
   }
 
-  // Start fresh animation
+  // Reset and prepare
   vcReset();
   _recChunks=[];
 
   try{
+    // Paint one frame first so the stream has content before recording starts
+    vcDrawFrame(0);
+
     const stream=cv.captureStream(30);
     const mimeType=MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
       ?'video/webm;codecs=vp9'
+      :MediaRecorder.isTypeSupported('video/webm;codecs=vp8')
+      ?'video/webm;codecs=vp8'
       :MediaRecorder.isTypeSupported('video/webm')
       ?'video/webm':'';
 
     if(!mimeType){
-      status.textContent='❌ WebM encoding not supported — use screen recorder';
+      status.textContent='❌ WebM not supported — use screen recorder';
       status.style.color='var(--red)';
       return;
     }
 
-    _recorder=new MediaRecorder(stream,{mimeType,videoBitsPerSecond:8000000});
-
+    _recorder=new MediaRecorder(stream,{mimeType,videoBitsPerSecond:6000000});
     _recorder.ondataavailable=e=>{if(e.data&&e.data.size>0)_recChunks.push(e.data);};
 
     _recorder.onstop=()=>{
       btn.textContent='⏺ Record WebM';
       btn.style.color='';
-      status.textContent='✓ Processing...';
+      if(_recChunks.length===0){
+        status.textContent='❌ No data recorded — try screen recording instead';
+        status.style.color='var(--red)';
+        return;
+      }
+      status.textContent='⏳ Processing video...';
+      status.style.color='var(--muted)';
       const blob=new Blob(_recChunks,{type:'video/webm'});
       const url=URL.createObjectURL(blob);
+      // Show download link + video preview
       const a=document.createElement('a');
       a.href=url;
       a.download=`vidhichakra-${_type}-${Date.now()}.webm`;
-      document.body.appendChild(a);a.click();
-      setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},500);
-      status.textContent='✅ Downloaded! Open in gallery or share directly.';
+      document.body.appendChild(a); a.click();
+      setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},2000);
+      status.textContent='✅ Saved to Downloads!';
       status.style.color='var(--green)';
     };
 
-    _recorder.start(100); // collect data every 100ms
-    btn.textContent='⏹ Stop & Download';
-    btn.style.color='var(--red)';
-    status.textContent='🔴 Recording... play the animation now';
-    status.style.color='var(--red)';
+    // Start recording THEN play — gives stream time to initialise
+    _recorder.start(200); // chunk every 200ms for more reliable data
 
-    // Auto-play animation
-    vcPlay();
+    // Small delay before starting animation ensures recorder is ready
+    setTimeout(()=>{
+      btn.textContent='⏹ Stop & Save';
+      btn.style.color='var(--red)';
+      status.textContent='🔴 Recording...';
+      status.style.color='var(--red)';
 
-    // Auto-stop when animation ends
-    const autoStop=setInterval(()=>{
-      if(!_vplaying&&_recorder&&_recorder.state==='recording'){
-        _recorder.stop();
-        clearInterval(autoStop);
+      // Custom play loop that stops recorder when animation ends
+      vcInitParticles();
+      _vt=0; _vplaying=true;
+      document.getElementById('vc-play-btn').textContent='⏸ Pause';
+      const dur=getAnimDur();
+      const start=performance.now();
+      function recLoop(now){
+        _vt=Math.min((now-start)/1000, dur);
+        try{ vcDrawFrame(_vt); }
+        catch(err){ console.error('Record frame error:',err.message); }
+        if(_vt<dur && _vplaying){
+          _vraf=requestAnimationFrame(recLoop);
+        } else {
+          // Animation done — stop recorder
+          _vplaying=false;
+          document.getElementById('vc-play-btn').textContent='▶ Play immediately';
+          if(_recorder&&_recorder.state==='recording'){
+            // Request final chunk before stopping
+            _recorder.requestData();
+            setTimeout(()=>_recorder.stop(), 300);
+          }
+        }
       }
-    },500);
+      _vraf=requestAnimationFrame(recLoop);
+    }, 300);
 
   }catch(e){
     status.textContent='❌ Error: '+e.message;
     status.style.color='var(--red)';
+    console.error('Recorder error:',e);
   }
 }
 
