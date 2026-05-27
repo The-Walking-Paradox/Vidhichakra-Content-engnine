@@ -87,6 +87,7 @@ canvas#cv{width:100%;height:100%;display:block}
   <button class="type-btn" onclick="setType('mantra',this)">🔱 मन्त्र</button>
   <button class="type-btn" onclick="setType('rashi',this)">⭐ राशि</button>
   <button class="type-btn" onclick="setType('tathya',this)">📖 तथ्य</button>
+  <button class="type-btn" onclick="setType('quiz',this)">🧠 Quiz</button>
 </div>
 
 <!-- VIEW TOGGLE -->
@@ -106,9 +107,21 @@ canvas#cv{width:100%;height:100%;display:block}
   <div class="theme-dot" data-theme="cosmic" style="background:radial-gradient(#FFB020,#100A00)" onclick="setTheme('cosmic',this)" title="Cosmic Gold"></div>
 </div>
 
-<!-- SMART PASTE -->
-<div style="padding:0 16px 10px;display:flex;align-items:center;gap:10px">
-  <button class="btn btn-outline" onclick="openSmartPaste()" style="flex:1;font-size:12px;border-color:var(--acc);color:var(--acc)">✨ Smart Paste — Auto-fill from text</button>
+<!-- ACTIONS PANEL -->
+<div style="padding:0 16px 10px;display:flex;flex-direction:column;gap:8px">
+  <button class="btn btn-outline" onclick="openSmartPaste()" style="width:100%;font-size:12px;border-color:var(--acc);color:var(--acc)">✨ Smart Paste — Auto-fill from text</button>
+
+  <!-- Factory Batch Engine -->
+  <div style="background:var(--bg2);border:1px solid var(--dim);border-radius:8px;padding:10px 12px">
+    <div style="font-size:10px;color:var(--gold);letter-spacing:2px;text-transform:uppercase;font-family:'Philosopher',serif;margin-bottom:8px">🏭 Batch Engine — Load CSV/JSON</div>
+    <button class="btn btn-outline" onclick="document.getElementById('batch-file-input').click()" style="width:100%;font-size:12px;border-color:var(--gold);color:var(--gold)">📊 Load Batch File</button>
+    <input type="file" id="batch-file-input" accept=".csv,.json" style="display:none" onchange="handleBatchFile(this)"/>
+    <div id="batch-nav-container" style="display:none;margin-top:8px;align-items:center;justify-content:space-between;background:var(--bg3);padding:6px 10px;border-radius:4px">
+      <button onclick="navigateBatch(-1)" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:18px">◀</button>
+      <span id="batch-index-display" style="font-size:12px;font-family:'Philosopher',serif;color:var(--text)">Post 1 of 1</span>
+      <button onclick="navigateBatch(1)" style="background:none;border:none;color:var(--gold);cursor:pointer;font-size:18px">▶</button>
+    </div>
+  </div>
 </div>
 
 <!-- Smart Paste Modal -->
@@ -121,11 +134,26 @@ canvas#cv{width:100%;height:100%;display:block}
     <div style="font-size:12px;color:var(--muted);margin-bottom:10px;font-family:'EB Garamond',serif;line-height:1.7">
       Copy any content — WhatsApp message, notes, typed text — and paste below. The tool will automatically detect the heading, numbered points, and source.
     </div>
-    <textarea id="sp-input" rows="10" placeholder="यहाँ पेस्ट गर्नुहोस्...\n\nउदाहरण:\nशनि साढेसातीको प्रभाव\n१. यो साढे सात वर्ष चल्छ\n२. शनिदेवले कर्मको फल दिन्छन्\nस्रोत: बृहत्पाराशर होरा" style="width:100%;background:var(--bg3);border:1px solid var(--dim);border-radius:6px;padding:12px;color:var(--text);font-family:'Tiro Devanagari Sanskrit',serif;font-size:14px;outline:none;line-height:1.7;resize:vertical;margin-bottom:12px"></textarea>
+    <textarea id="sp-input" rows="10" placeholder="यहाँ पेस्ट गर्नुहोस्..." style="width:100%;background:var(--bg3);border:1px solid var(--dim);border-radius:6px;padding:12px;color:var(--text);font-family:'Tiro Devanagari Sanskrit',serif;font-size:14px;outline:none;line-height:1.7;resize:vertical;margin-bottom:12px"></textarea>
     <div id="sp-preview" style="display:none;background:var(--bg2);border:1px solid var(--dim);border-radius:6px;padding:12px;margin-bottom:12px;font-size:13px;font-family:'EB Garamond',serif;line-height:1.8"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
       <button class="btn btn-outline" onclick="smartParsePeview()" style="font-size:13px">👁 Preview Parse</button>
       <button class="btn btn-gold" onclick="smartPasteApply()" style="font-size:13px">✓ Fill Fields</button>
+    </div>
+  </div>
+</div>
+
+<!-- GLOBAL HOOK FIELD — visible across all tabs except quiz -->
+<div class="inputs" style="padding-bottom:0" id="hook-field-wrap">
+  <div class="field" style="margin-bottom:6px">
+    <label style="color:var(--acc)">⚡ Hook — Scroll stopper (all tabs)</label>
+    <input id="f-hook" placeholder="e.g. ⚠️ ९५% मानिसलाई थाहा छैन..." oninput="renderCard();updateWordCount()"/>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px">
+      <span onclick="document.getElementById('f-hook').value=this.textContent;renderCard();updateWordCount()" style="cursor:pointer;font-size:11px;background:var(--bg3);border:1px solid var(--dim);padding:4px 8px;border-radius:12px;color:var(--muted);font-family:'Tiro Devanagari Sanskrit',serif">⚠️ ९५% मानिसलाई थाहा छैन</span>
+      <span onclick="document.getElementById('f-hook').value=this.textContent;renderCard();updateWordCount()" style="cursor:pointer;font-size:11px;background:var(--bg3);border:1px solid var(--dim);padding:4px 8px;border-radius:12px;color:var(--muted);font-family:'Tiro Devanagari Sanskrit',serif">🔥 धेरैले बेवास्ता गर्छन्</span>
+      <span onclick="document.getElementById('f-hook').value=this.textContent;renderCard();updateWordCount()" style="cursor:pointer;font-size:11px;background:var(--bg3);border:1px solid var(--dim);padding:4px 8px;border-radius:12px;color:var(--muted);font-family:'Tiro Devanagari Sanskrit',serif">❓ के तपाईंलाई थाहा छ?</span>
+      <span onclick="document.getElementById('f-hook').value=this.textContent;renderCard();updateWordCount()" style="cursor:pointer;font-size:11px;background:var(--bg3);border:1px solid var(--dim);padding:4px 8px;border-radius:12px;color:var(--muted);font-family:'Tiro Devanagari Sanskrit',serif">🪐 यो कुरा धेरैलाई थाहा छैन</span>
+      <span onclick="document.getElementById('f-hook').value=this.textContent;renderCard();updateWordCount()" style="cursor:pointer;font-size:11px;background:var(--bg3);border:1px solid var(--dim);padding:4px 8px;border-radius:12px;color:var(--muted);font-family:'Tiro Devanagari Sanskrit',serif">✨ आजको ज्ञान</span>
     </div>
   </div>
 </div>
@@ -153,6 +181,19 @@ canvas#cv{width:100%;height:100%;display:block}
 <div class="actions" id="static-actions">
   <button class="btn btn-gold" onclick="downloadCard()">⬇ Download PNG</button>
   <button class="btn btn-outline" onclick="renderCard()">↺ Refresh</button>
+</div>
+
+<!-- QUALITY SCORE + AI OPTIMIZE (gyan only for now) -->
+<div id="quality-panel" style="padding:0 16px;margin-bottom:14px;display:none">
+  <div style="background:var(--bg2);border:1px solid var(--dim);border-radius:8px;padding:12px 14px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;font-family:'Philosopher',serif">Content Score</div>
+      <div id="qs-score" style="font-family:'Philosopher',serif;font-size:18px;font-weight:700"></div>
+    </div>
+    <div id="qs-checks" style="font-size:12px;line-height:2;font-family:'EB Garamond',serif"></div>
+    <button onclick="aiOptimize()" id="ai-opt-btn" class="btn btn-outline" style="width:100%;margin-top:10px;font-size:13px;border-color:var(--acc);color:var(--acc)">✨ AI Optimize — Improve with Claude</button>
+    <div id="ai-opt-result" style="display:none;margin-top:10px;background:var(--bg3);border-radius:6px;padding:10px 12px;font-size:12px;font-family:'EB Garamond',serif;line-height:1.8;color:var(--text)"></div>
+  </div>
 </div>
 <div id="anim-actions" style="display:none;padding:0 16px;margin-bottom:16px">
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
@@ -198,6 +239,7 @@ const TYPES = {
   mantra:  {label:'मन्त्र',fields:['mantra','artha'],mantraPH:'e.g. ॐ नमः शिवाय',arthaPH:'मन्त्रको अर्थ नेपालीमा...'},
   rashi:   {label:'राशि',fields:['rashi','body','keyword'],rashiPH:'e.g. मेष राशि',bodyPH:'राशिको विशेषता वा आजको फल...',keywordPH:'e.g. साहस • नेतृत्व • ऊर्जा'},
   tathya:  {label:'तथ्य',fields:['number','heading','body'],numberPH:'e.g. ७',headingPH:'e.g. सात ग्रहको महत्त्व',bodyPH:'रोचक वेदिक तथ्य नेपालीमा...'},
+  quiz:    {label:'तपाईंको ज्योतिष ज्ञान जाँच्नुहोस्',fields:['question','optA','optB','optC','optD','correct','explain'],questionPH:'e.g. नवग्रहमा कति ग्रह छन्?',optAPH:'e.g. ७',optBPH:'e.g. ९',optCPH:'e.g. १२',optDPH:'e.g. ५'},
 };
 
 const SUGGESTIONS = {
@@ -237,14 +279,21 @@ const SUGGESTIONS = {
     {tag:'तथ्य',text:'नवग्रह — ९ ग्रहको संक्षिप्त परिचय'},
     {tag:'तथ्य',text:'वैदिक ज्योतिष र पश्चिमी ज्योतिषको फरक'},
   ],
+  quiz:[
+    {tag:'ज्योतिष',text:'नवग्रहमा कति ग्रह छन्?'},
+    {tag:'वास्तु',text:'ईशान कोण कुन दिशा हो?'},
+    {tag:'मन्त्र',text:'पञ्चाक्षरी मन्त्र कुन हो?'},
+    {tag:'ज्योतिष',text:'साढेसाती कति वर्ष चल्छ?'},
+  ],
 };
-
-let _type='gyan', _theme='shakti';
 
 function setType(t,btn){
   _type=t;
   document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
+  // Hide hook field for quiz — it has its own title
+  const hookWrap=document.getElementById('hook-field-wrap');
+  if(hookWrap) hookWrap.style.display=t==='quiz'?'none':'block';
   buildInputs();
   buildSuggestions();
   renderCard();
@@ -263,14 +312,24 @@ function buildInputs(){
 
   if(_type==='gyan'){
     html=`
-      <div class="field"><label>शीर्षक / Heading</label><input id="f-heading" placeholder="${T.headingPH}" oninput="renderCard()"/></div>
-      <div style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;font-family:'Philosopher',serif;margin-bottom:8px">बुँदाहरू / Points (प्रत्येक बुँदा छुट्टाछुट्टै)</div>
+      <div class="field"><label>शीर्षक / Heading</label><input id="f-heading" placeholder="${T.headingPH}" oninput="renderCard();updateWordCount()"/></div>
+      <div style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;font-family:'Philosopher',serif;margin-bottom:8px">बुँदाहरू / Points</div>
       ${[1,2,3,4,5].map(i=>`
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
         <div style="width:28px;height:28px;border-radius:50%;background:rgba(153,102,221,0.25);border:1.5px solid rgba(153,102,221,0.6);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Philosopher',serif;font-size:13px;font-weight:700;color:var(--gold)">${i}</div>
-        <input id="f-item-${i}" style="flex:1;background:var(--bg3);border:1px solid var(--dim);border-radius:6px;padding:9px 12px;color:var(--text);font-family:'Tiro Devanagari Sanskrit',serif;font-size:14px;outline:none" placeholder="बुँदा ${i}..." oninput="renderCard()"/>
+        <input id="f-item-${i}" style="flex:1;background:var(--bg3);border:1px solid var(--dim);border-radius:6px;padding:9px 12px;color:var(--text);font-family:'Tiro Devanagari Sanskrit',serif;font-size:14px;outline:none" placeholder="बुँदा ${i}..." oninput="renderCard();updateWordCount()"/>
       </div>`).join('')}
-      <div class="field" style="margin-top:4px"><label>स्रोत / Source</label><input id="f-source" placeholder="${T.sourcePH}" oninput="renderCard()"/></div>`;
+      <div class="field" style="margin-top:4px"><label>स्रोत / Source</label><input id="f-source" placeholder="${T.sourcePH}" oninput="renderCard()"/></div>
+      <div id="word-count-bar" style="margin-top:10px;display:none">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:10px;color:var(--muted);font-family:'Philosopher',serif;letter-spacing:1px;text-transform:uppercase">Word Count</span>
+          <span id="word-count-num" style="font-size:11px;font-family:'Philosopher',serif;font-weight:700"></span>
+        </div>
+        <div style="height:4px;background:var(--dim);border-radius:2px;overflow:hidden">
+          <div id="word-count-fill" style="height:100%;border-radius:2px;transition:width .3s,background .3s"></div>
+        </div>
+        <div id="word-count-msg" style="font-size:11px;margin-top:4px;font-family:'EB Garamond',serif"></div>
+      </div>`;
   } else if(_type==='upay'){
     html=`
       <div class="field"><label>समस्या / Problem</label><input id="f-problem" placeholder="${T.headingPH}" oninput="renderCard()"/></div>
@@ -298,8 +357,32 @@ function buildInputs(){
         <div class="field"><label>शीर्षक</label><input id="f-heading" placeholder="${T.headingPH}" oninput="renderCard()"/></div>
       </div>
       <div class="field"><label>तथ्य / Fact</label><textarea id="f-body" rows="5" placeholder="${T.bodyPH}" oninput="renderCard()"></textarea></div>`;
+  } else if(_type==='quiz'){
+    html=`
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;font-family:'Philosopher',serif">प्रश्नहरू / Questions</div>
+        <button onclick="addQuizQuestion()" style="background:rgba(153,102,221,0.2);border:1px solid rgba(153,102,221,0.5);color:var(--gold);padding:5px 12px;border-radius:4px;font-family:'Philosopher',serif;font-size:12px;cursor:pointer">+ Add Question</button>
+      </div>
+      <div id="quiz-questions-list"></div>
+      <div class="row2" style="margin-top:10px">
+        <div class="field">
+          <label>⏱ Timer per Q</label>
+          <select id="f-timer" onchange="renderCard()" style="background:var(--bg3);border:1px solid var(--dim);border-radius:6px;padding:10px 12px;color:var(--text);font-family:'Philosopher',serif;font-size:14px;outline:none;cursor:pointer">
+            <option value="5">5s</option><option value="10">10s</option><option value="15" selected>15s</option><option value="20">20s</option><option value="30">30s</option>
+          </select>
+        </div>
+        <div class="field">
+          <label style="color:var(--muted)">Total</label>
+          <div id="quiz-q-count" style="background:var(--bg3);border:1px solid var(--dim);border-radius:6px;padding:10px 12px;color:var(--gold);font-family:'Philosopher',serif;font-size:16px;font-weight:700;text-align:center">1 Q</div>
+        </div>
+      </div>`;
   }
   document.getElementById('inputs-area').innerHTML=html;
+  // Quiz needs to render its question list AFTER innerHTML is set
+  if(_type==='quiz'){
+    if(!window._quizQs||!window._quizQs.length) window._quizQs=[{q:'',A:'',B:'',C:'',D:'',correct:'A',explain:''}];
+    renderQuizInputs();
+  }
 }
 
 function buildSuggestions(){
@@ -323,11 +406,10 @@ function getVal(id){return document.getElementById(id)?.value.trim()||'';}
 function renderCard(){
   const cv=document.getElementById('cv');
   if(!cv)return;
-  // Always render preview at fixed 540×960 (half of final 1080×1920)
-  // This gives s=0.5 so fonts are exactly half final size — readable and correct proportions
   cv.width=540; cv.height=960;
   cv.style.width='100%'; cv.style.height='100%';
   drawCard(cv.getContext('2d'),540,960,false);
+  if(_type==='gyan'){updateWordCount();updateQualityScore();}
 }
 
 function downloadCard(){
@@ -365,22 +447,16 @@ function drawCard(ctx,W,H,full){
   const s=W/1080;
 
   // ── Background ──
-  const bg=ctx.createRadialGradient(W/2,H*0.3,0,W/2,H*0.3,H*0.9);
+  const bg=ctx.createLinearGradient(0,0,0,H);
   bg.addColorStop(0,c.bg1); bg.addColorStop(1,c.bg2);
   ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
 
-  // Radial glow
-  const rg=ctx.createRadialGradient(W/2,H*0.3,0,W/2,H*0.3,W*0.65);
-  rg.addColorStop(0,c.glow+'28'); rg.addColorStop(1,'transparent');
+  // Center glow
+  const rg=ctx.createRadialGradient(W/2,H*0.42,0,W/2,H*0.42,W*0.7);
+  rg.addColorStop(0,c.glow+'22'); rg.addColorStop(1,'transparent');
   ctx.fillStyle=rg; ctx.fillRect(0,0,W,H);
 
-  // Scanline texture
-  for(let i=0;i<H;i+=3*s){
-    ctx.fillStyle='rgba(0,0,0,0.04)';
-    ctx.fillRect(0,i,W,1.5*s);
-  }
-
-  function sg(col,sz){ctx.shadowColor=col;ctx.shadowBlur=sz*s;ctx.shadowOffsetY=2*s;}
+  function sg(col,sz){ctx.shadowColor=col||'transparent';ctx.shadowBlur=(sz||0)*s;ctx.shadowOffsetY=2*s;}
   function cg(){ctx.shadowColor='transparent';ctx.shadowBlur=0;ctx.shadowOffsetY=0;}
   function gl(x1,x2,y,op){
     const g=ctx.createLinearGradient(x1,y,x2,y);
@@ -400,64 +476,84 @@ function drawCard(ctx,W,H,full){
 
   ctx.textAlign='center'; ctx.textBaseline='alphabetic';
 
-  // ── Corner ornaments ──
-  const co=44*s;
-  ctx.strokeStyle=c.gold+'44'; ctx.lineWidth=2*s;
-  [[0,0,1,1],[W,0,-1,1],[0,H,1,-1],[W,H,-1,-1]].forEach(([cx,cy,sx,sy])=>{
+  // Safe margins — 8% from each edge so nothing gets cropped by Facebook/TikTok
+  const SAFE=Math.round(86*s);
+  const CONTENT_LEFT=SAFE;
+  const CONTENT_W=W-SAFE*2;
+
+  // Corner marks (subtle)
+  ctx.strokeStyle=c.gold+'33'; ctx.lineWidth=2*s;
+  const co=50*s;
+  [[SAFE*0.4,SAFE*0.4,1,1],[W-SAFE*0.4,SAFE*0.4,-1,1],
+   [SAFE*0.4,H-SAFE*0.4,1,-1],[W-SAFE*0.4,H-SAFE*0.4,-1,-1]].forEach(([cx,cy,sx,sy])=>{
     ctx.beginPath();ctx.moveTo(cx+sx*co,cy);ctx.lineTo(cx,cy);ctx.lineTo(cx,cy+sy*co);ctx.stroke();
   });
 
-  const PAD=70*s;
-  let y=H*0.07;
+  // ── ZONE 1: ॐ symbol anchor (small, centered) ──
+  let y=H*0.09;
+  if(_type==='quiz'){
+    // Quiz has its own title — skip ॐ and hook, just add top padding
+    y=H*0.10;
+  } else {
+    sg(c.glow,30);
+    ctx.font=`${Math.round(52*s)}px 'Tiro Devanagari Sanskrit',serif`;
+    ctx.fillStyle=c.gold+'BB';
+    ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+    ctx.fillText(c.sym,W/2,y+Math.round(50*s));
+    y+=Math.round(68*s); cg();
 
-  // ── Brand header (compact) ──
-  sg(c.glow,20);
-  ctx.font=`400 ${Math.round(18*s)}px 'Tiro Devanagari Sanskrit',serif`;
-  ctx.fillStyle=c.sub+'AA';
-  ctx.fillText('॥  विधि चक्र  ॥',W/2,y); y+=26*s;
-  gl(PAD*1.4,W-PAD*1.4,y,0.4); y+=24*s;
-  ctx.font=`${Math.round(42*s)}px 'Tiro Devanagari Sanskrit',serif`;
-  ctx.fillStyle=c.gold;
-  ctx.fillText(c.sym,W/2,y); y+=34*s;
-  gl(PAD*1.4,W-PAD*1.4,y,0.4); y+=26*s;
-  cg();
-
-  // ── Category pill ──
-  const catFS=Math.round(22*s);
-  ctx.font=`400 ${catFS}px 'Tiro Devanagari Sanskrit',serif`;
-  const catW=ctx.measureText(TYPES[_type].label).width+70*s;
-  const catH=40*s, catX=W/2-catW/2;
-  ctx.fillStyle=c.acc+'22';
-  rr(catX,y,catW,catH,catH/2); ctx.fill();
-  ctx.strokeStyle=c.acc+'77'; ctx.lineWidth=1.5*s;
-  rr(catX,y,catW,catH,catH/2); ctx.stroke();
-  sg(c.glow,12);
-  ctx.fillStyle=c.gold+'EE';
-  ctx.fillText(TYPES[_type].label,W/2,y+catH*0.68);
-  y+=catH+20*s; cg();
+    // ── Hook — HERO strip, first thing eyes go to ──
+    const hookVal=getVal('f-hook');
+    if(hookVal){
+      const hkFS=Math.round(38*s);
+      const hkH=Math.round(80*s);
+      const hkGrad=ctx.createLinearGradient(0,y,W,y);
+      hkGrad.addColorStop(0,c.acc+'55');
+      hkGrad.addColorStop(0.5,c.acc+'88');
+      hkGrad.addColorStop(1,c.acc+'55');
+      ctx.fillStyle=hkGrad;
+      ctx.fillRect(SAFE,y,W-SAFE*2,hkH);
+      ctx.fillStyle=c.gold;
+      ctx.fillRect(SAFE,y,Math.round(5*s),hkH);
+      ctx.strokeStyle=c.gold+'66'; ctx.lineWidth=1.5*s;
+      ctx.strokeRect(SAFE,y,W-SAFE*2,hkH);
+      sg(c.glow,25);
+      ctx.font=`700 ${hkFS}px 'Tiro Devanagari Sanskrit',serif`;
+      ctx.fillStyle='#FFFFFF';
+      ctx.fillText(hookVal,W/2,y+hkH*0.66);
+      y+=hkH+Math.round(20*s); cg();
+    } else {
+      y+=Math.round(10*s);
+    }
+    gl(SAFE,W-SAFE,y,0.3); y+=Math.round(28*s);
+  }
 
   // ── TYPE-SPECIFIC CONTENT ──
-  const footerY=H*0.856; // raised so footer text stays inside frame
-  if(_type==='gyan') drawGyan(ctx,W,H,y,footerY,s,c,sg,cg,gl,rr);
+  // Quiz gets raised footer so content + footer both stay in safe zone
+  const FOOTER_TOP=_type==='quiz'?H*0.84:H*0.875;
+  if(_type==='gyan') drawGyan(ctx,W,H,y,FOOTER_TOP,s,c,sg,cg,gl,rr,SAFE,CONTENT_W);
   else if(_type==='upay') drawUpay(ctx,W,H,y,s,c,sg,cg,gl,rr);
   else if(_type==='prashna') drawPrashna(ctx,W,H,y,s,c,sg,cg,gl,rr);
   else if(_type==='mantra') drawMantra(ctx,W,H,y,s,c,sg,cg,gl,rr);
   else if(_type==='rashi') drawRashi(ctx,W,H,y,s,c,sg,cg,gl,rr);
   else if(_type==='tathya') drawTathya(ctx,W,H,y,s,c,sg,cg,gl,rr);
+  else if(_type==='quiz') drawQuiz(ctx,W,H,y,FOOTER_TOP,s,c,sg,cg,gl,rr,SAFE,CONTENT_W);
 
-  // ── Footer (raised, tighter) ──
-  const fY=H*0.856;
-  gl(PAD,W-PAD,fY,0.28);
-  sg(c.acc+'88',28);
-  ctx.font=`400 ${Math.round(18*s)}px 'Tiro Devanagari Sanskrit',serif`;
+  // ── ZONE 3: Footer ──
+  const fY=FOOTER_TOP;
+  gl(SAFE,W-SAFE,fY,0.25);
+  sg(c.acc+'66',20);
+  ctx.font=`400 ${Math.round(22*s)}px 'Philosopher',serif`;
   ctx.fillStyle=c.sub+'88';
-  ctx.fillText('उपाय • विधि • शक्ति',W/2,fY+28*s);
+  // Quiz uses its own CTA already rendered inside drawQuiz — footer just shows brand
+  if(_type!=='quiz') ctx.fillText(getRotatingCTA(),W/2,fY+Math.round(34*s));
+  sg(c.glow,35);
   ctx.fillStyle=c.gold;
-  ctx.font=`400 ${Math.round(40*s)}px 'Tiro Devanagari Sanskrit',serif`;
-  ctx.fillText('विधि चक्र',W/2,fY+80*s);
-  ctx.fillStyle=c.sub+'55';
-  ctx.font=`400 ${Math.round(16*s)}px 'Philosopher',serif`;
-  ctx.fillText('VIDHI CHAKRA',W/2,fY+102*s);
+  ctx.font=`400 ${Math.round(52*s)}px 'Tiro Devanagari Sanskrit',serif`;
+  ctx.fillText('विधि चक्र',W/2,fY+(_type==='quiz'?Math.round(44*s):Math.round(96*s)));
+  ctx.fillStyle=c.sub+'66';
+  ctx.font=`400 ${Math.round(20*s)}px 'Philosopher',serif`;
+  ctx.fillText('VIDHI CHAKRA',W/2,fY+(_type==='quiz'?Math.round(68*s):Math.round(122*s)));
   cg();
 }
 
@@ -480,85 +576,88 @@ function drawLines(ctx,lines,font,color,cx,startY,lh,sg,cg,glowC,glowSz){
 }
 
 // ── GYAN ──
-function drawGyan(ctx,W,H,contentTop,footerY,s,c,sg,cg,gl,rr){
+function drawGyan(ctx,W,H,contentTop,footerY,s,c,sg,cg,gl,rr,SAFE,CONTENT_W){
   const heading=getVal('f-heading'), source=getVal('f-source');
   const items=[1,2,3,4,5].map(i=>getVal('f-item-'+i)).filter(x=>x);
   if(!heading&&!items.length) return;
 
-  // ── Measure everything first ──
-  const hFS=Math.round(46*s), hLH=Math.round(58*s);
-  const iFS=Math.round(38*s), iLH=Math.round(50*s);
-  const CIRC_R=Math.round(30*s), CIRC_CX=Math.round(84*s);
-  const TEXT_X=CIRC_CX+CIRC_R+Math.round(20*s);
-  const TEXT_W=W-TEXT_X-Math.round(52*s);
-  const ROW_PAD=Math.round(26*s), ROW_GAP=Math.round(12*s);
-  const DIVIDER_H=Math.round(20*s);
-  const hLines=heading?wrapLines(ctx,heading,`700 ${hFS}px 'Tiro Devanagari Sanskrit',serif`,W*0.84):[];
-  const hBlock=hLines.length*hLH+(heading?Math.round(12*s):0);
+  const SAFE_L=SAFE||Math.round(86*s);
+  const TEXT_AREA=CONTENT_W||(W-SAFE_L*2);
+  let y=contentTop;
 
-  const iRows=items.map(item=>{
-    const lines=wrapLines(ctx,item,`600 ${iFS}px 'Tiro Devanagari Sanskrit',serif`,TEXT_W);
-    const rowH=lines.length*iLH+ROW_PAD;
-    return{lines,rowH};
-  });
-  const iBlock=iRows.length?(DIVIDER_H+iRows.reduce((a,r)=>a+r.rowH+ROW_GAP,0)-ROW_GAP):0;
-  const totalH=hBlock+iBlock+(source?Math.round(32*s):0);
+  // Pre-measure heading lines for gap calculation
+  const hFS=Math.round(58*s), hLH=Math.round(70*s);
+  const hLines=heading?wrapLines(ctx,heading,`700 ${hFS}px 'Tiro Devanagari Sanskrit',serif`,TEXT_AREA*0.95):[];
 
-  // Distribute content — bias 30% from top, spread remaining space between rows
-  const available=footerY-contentTop;
-  const topGap=Math.min(Math.round(20*s), Math.max(0,(available-totalH)*0.3));
-  let y=contentTop+topGap;
-  const leftover=available-totalH-topGap;
-  const spreadBonus=iRows.length>0?Math.min(Math.round(40*s),Math.max(0,Math.round(leftover/(iRows.length+1)))):0;
-
-  // ── Draw heading ──
-  if(hLines.length){
-    sg(c.glow,28);
+  // ── Headline ──
+  if(heading){
+    sg(c.glow,35);
     ctx.font=`700 ${hFS}px 'Tiro Devanagari Sanskrit',serif`;
     ctx.fillStyle=c.gold;
-    hLines.forEach((l,i)=>ctx.fillText(l,W/2,y+hLH*0.82+i*hLH));
-    y+=hLines.length*hLH+Math.round(12*s); cg();
+    hLines.forEach((l,i)=>ctx.fillText(l,W/2,y+hFS+i*hLH));
+    y+=hLines.length*hLH+Math.round(18*s); cg();
   }
 
-  // ── Draw items ──
-  if(iRows.length){
-    gl(Math.round(80*s),W-Math.round(80*s),y,0.25); y+=DIVIDER_H;
-    iRows.forEach(({lines,rowH},idx)=>{
+  // ── Items — measure first, then distribute space evenly ──
+  if(items.length){
+    gl(SAFE_L,W-SAFE_L,y,0.25); y+=Math.round(16*s);
+    const iFS=Math.round(40*s), iLH=Math.round(52*s);
+    const CIRC_R=Math.round(32*s);
+    const CIRC_CX=SAFE_L+CIRC_R+Math.round(8*s);
+    const TEXT_X=CIRC_CX+CIRC_R+Math.round(20*s);
+    const TEXT_W=W-TEXT_X-SAFE_L;
+    const ROW_V_PAD=Math.round(22*s);
+
+    // Measure all rows first
+    const rowHeights=items.map(item=>{
+      const lines=wrapLines(ctx,item,`600 ${iFS}px 'Tiro Devanagari Sanskrit',serif`,TEXT_W);
+      return{lines,rowH:lines.length*iLH+ROW_V_PAD};
+    });
+
+    // Calculate how much space is left after all rows
+    const totalRowH=rowHeights.reduce((a,r)=>a+r.rowH,0);
+    const sourceH=source?Math.round(40*s):0;
+    const availableForGaps=footerY-y-totalRowH-sourceH;
+    // Distribute space: minimum 10px gap, max 60px — shared between rows+1 slots
+    const numGaps=items.length+1;
+    const rawGap=Math.floor(availableForGaps/numGaps);
+    const ROW_GAP=Math.max(Math.round(10*s),Math.min(Math.round(60*s),rawGap));
+    // Top offset using first gap slot
+    y+=ROW_GAP;
+
+    rowHeights.forEach(({lines,rowH},idx)=>{
       const midY=y+rowH/2;
-      // Row bg
-      ctx.fillStyle='rgba(0,0,0,0.38)';
-      rr(Math.round(44*s),y,W-Math.round(88*s),rowH,Math.round(12*s)); ctx.fill();
-      ctx.strokeStyle=c.gold+'22'; ctx.lineWidth=1.5*s;
-      rr(Math.round(44*s),y,W-Math.round(88*s),rowH,Math.round(12*s)); ctx.stroke();
-      // Left bar
-      ctx.fillStyle=c.acc+'77';
-      ctx.fillRect(Math.round(44*s),y+rowH*0.15,Math.round(4*s),rowH*0.7);
-      // Circle
-      ctx.beginPath(); ctx.arc(CIRC_CX,midY,CIRC_R,0,Math.PI*2);
-      ctx.fillStyle=c.acc+'33'; ctx.fill();
-      ctx.strokeStyle=c.gold+'88'; ctx.lineWidth=Math.round(2*s); ctx.stroke();
-      sg(null,0);
-      ctx.font=`700 ${Math.round(26*s)}px 'Philosopher',serif`;
+      const rowGrad=ctx.createLinearGradient(SAFE_L,y,W-SAFE_L,y);
+      rowGrad.addColorStop(0,c.acc+'18'); rowGrad.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=rowGrad;
+      rr(SAFE_L,y,W-SAFE_L*2,rowH,Math.round(14*s)); ctx.fill();
+      ctx.strokeStyle=c.gold+'18'; ctx.lineWidth=1.5*s;
+      rr(SAFE_L,y,W-SAFE_L*2,rowH,Math.round(14*s)); ctx.stroke();
+      ctx.fillStyle=c.acc+'BB';
+      ctx.fillRect(SAFE_L,y+rowH*0.2,Math.round(4*s),rowH*0.6);
+      ctx.beginPath();ctx.arc(CIRC_CX,midY,CIRC_R,0,Math.PI*2);
+      ctx.fillStyle=c.acc+'30'; ctx.fill();
+      ctx.strokeStyle=c.gold+'99'; ctx.lineWidth=Math.round(2.5*s); ctx.stroke();
+      sg(c.glow,15);
+      ctx.font=`700 ${Math.round(30*s)}px 'Philosopher',serif`;
       ctx.fillStyle=c.gold; ctx.textAlign='center';
-      ctx.fillText(idx+1,CIRC_CX,midY+Math.round(9*s));
-      // Text
+      ctx.fillText(idx+1,CIRC_CX,midY+Math.round(11*s)); cg();
       ctx.textAlign='left';
       ctx.font=`600 ${iFS}px 'Tiro Devanagari Sanskrit',serif`;
       ctx.fillStyle=c.text;
       const textY=midY-(lines.length*iLH)/2+iLH*0.78;
       lines.forEach((l,li)=>ctx.fillText(l,TEXT_X,textY+li*iLH));
       ctx.textAlign='center';
-      y+=rowH+ROW_GAP+spreadBonus;
+      y+=rowH+ROW_GAP;
     });
     cg();
   }
 
-  // ── Source ──
   if(source){
-    y+=Math.round(6*s);
-    ctx.font=`italic 400 ${Math.round(22*s)}px 'EB Garamond',serif`;
-    ctx.fillStyle=c.sub+'77';
-    ctx.fillText('— '+source+' —',W/2,y+Math.round(22*s));
+    y+=Math.round(8*s);
+    ctx.font=`italic 400 ${Math.round(24*s)}px 'EB Garamond',serif`;
+    ctx.fillStyle=c.sub+'66';
+    ctx.fillText('— '+source+' —',W/2,y+Math.round(24*s));
   }
 }
 // ── UPAY ──
@@ -770,6 +869,117 @@ function drawTathya(ctx,W,H,y,s,c,sg,cg,gl,rr){
   }
 }
 
+// ── QUIZ STATIC RENDERER ──
+function drawQuiz(ctx,W,H,y,footerY,s,c,sg,cg,gl,rr,SAFE,CONTENT_W){
+  const qo=window._quizQs[window._quizCurrentIdx||0]||{};
+  const question=qo.q||'';
+  const opts=[qo.A||'',qo.B||'',qo.C||'',qo.D||''];
+  const correct=qo.correct||'A';
+  const explain=qo.explain||'';
+  const totalQs=window._quizQs.length;
+  const timerVal=parseInt(getVal('f-timer')||'15'); // FIX: was missing
+  if(!question) return;
+
+  const LETTERS=['A','B','C','D'];
+  const iFS=Math.round(34*s), iLH=Math.round(44*s);
+  const OPT_PAD=Math.round(20*s);
+  const OPT_GAP=Math.round(12*s);
+
+  // ── Quiz title strip ──
+  const titleFS=Math.round(26*s);
+  sg(c.acc+'99',18);
+  ctx.font=`700 ${titleFS}px 'Philosopher',serif`;
+  ctx.fillStyle=c.gold+'CC';
+  ctx.fillText('🧠 Test Your Knowledge',W/2,y+titleFS);
+  y+=titleFS+Math.round(18*s); cg();
+  gl(SAFE,W-SAFE,y,0.25); y+=Math.round(14*s);
+
+  // Measure rows
+  const optRows=opts.map(opt=>{
+    if(!opt) return null;
+    const lines=wrapLines(ctx,opt,`500 ${iFS}px 'Tiro Devanagari Sanskrit',serif`,W-SAFE*2-Math.round(80*s));
+    return{lines,rowH:lines.length*iLH+OPT_PAD};
+  });
+
+  const qFS=Math.round(40*s), qLH=Math.round(54*s);
+  const qLines=wrapLines(ctx,question,`700 ${qFS}px 'Tiro Devanagari Sanskrit',serif`,(W-SAFE*2)*0.88);
+  const qH=qLines.length*qLH+Math.round(40*s);
+
+  // Question box
+  ctx.fillStyle='rgba(0,0,0,0.45)';
+  rr(SAFE,y,W-SAFE*2,qH,Math.round(14*s)); ctx.fill();
+  ctx.strokeStyle=c.gold+'33'; ctx.lineWidth=2*s;
+  rr(SAFE,y,W-SAFE*2,qH,Math.round(14*s)); ctx.stroke();
+  ctx.fillStyle=c.acc; ctx.fillRect(SAFE,y,W-SAFE*2,Math.round(4*s));
+  sg(c.glow,20);
+  ctx.font=`700 ${qFS}px 'Tiro Devanagari Sanskrit',serif`;
+  ctx.fillStyle=c.gold;
+  qLines.forEach((l,i)=>ctx.fillText(l,W/2,y+qFS+i*qLH+Math.round(10*s)));
+  y+=qH+Math.round(16*s); cg();
+
+  // Timer circle
+  const CR=Math.round(38*s), CX=W-SAFE-CR, CY=y-Math.round(CR+8*s);
+  ctx.beginPath(); ctx.arc(CX,CY,CR,0,Math.PI*2);
+  ctx.fillStyle=c.acc+'22'; ctx.fill();
+  ctx.strokeStyle=c.gold+'88'; ctx.lineWidth=Math.round(3*s); ctx.stroke();
+  sg(c.glow,20);
+  ctx.font=`700 ${Math.round(34*s)}px 'Philosopher',serif`;
+  ctx.fillStyle=c.gold;
+  ctx.fillText(timerVal,CX,CY+Math.round(12*s));
+  cg();
+
+  // Options
+  gl(SAFE,W-SAFE,y,0.2); y+=Math.round(14*s);
+  optRows.forEach((row,idx)=>{
+    if(!row) return;
+    const isCorrect=LETTERS[idx]===correct;
+    const midY=y+row.rowH/2;
+    const CX2=SAFE+Math.round(30*s);
+
+    // Row bg
+    ctx.fillStyle=isCorrect?'rgba(48,200,112,0.12)':'rgba(0,0,0,0.3)';
+    rr(SAFE,y,W-SAFE*2,row.rowH,Math.round(10*s)); ctx.fill();
+    ctx.strokeStyle=isCorrect?'rgba(48,200,112,0.4)':c.gold+'15';
+    ctx.lineWidth=isCorrect?2*s:1.5*s;
+    rr(SAFE,y,W-SAFE*2,row.rowH,Math.round(10*s)); ctx.stroke();
+
+    // Letter circle
+    ctx.beginPath(); ctx.arc(CX2,midY,Math.round(22*s),0,Math.PI*2);
+    ctx.fillStyle=isCorrect?'rgba(48,200,112,0.25)':c.acc+'25'; ctx.fill();
+    ctx.strokeStyle=isCorrect?'rgba(48,200,112,0.8)':c.gold+'66';
+    ctx.lineWidth=Math.round(2*s); ctx.stroke();
+    sg(isCorrect?'rgba(48,200,112,0.8)':c.glow,10);
+    ctx.font=`700 ${Math.round(22*s)}px 'Philosopher',serif`;
+    ctx.fillStyle=isCorrect?'#30C870':c.gold;
+    ctx.fillText(LETTERS[idx],CX2,midY+Math.round(8*s));
+    cg();
+
+    // Option text
+    ctx.textAlign='left';
+    ctx.font=`500 ${iFS}px 'Tiro Devanagari Sanskrit',serif`;
+    ctx.fillStyle=isCorrect?'#50E890':c.text;
+    const tx=SAFE+Math.round(66*s);
+    const ty=midY-(row.lines.length*iLH)/2+iLH*0.78;
+    row.lines.forEach((l,li)=>ctx.fillText(l,tx,ty+li*iLH));
+    ctx.textAlign='center';
+    y+=row.rowH+OPT_GAP;
+  });
+
+  // CTA — placed near footer, not right after last option
+  if(explain){
+    y+=Math.round(8*s);
+    ctx.font=`italic 400 ${Math.round(22*s)}px 'EB Garamond',serif`;
+    ctx.fillStyle=c.sub+'88';
+    ctx.fillText(explain,W/2,y+Math.round(22*s));
+    y+=Math.round(34*s);
+  }
+  // Push CTA to fixed position near footer — never overlaps options
+  const ctaY=footerY-Math.round(52*s);
+  ctx.font=`700 ${Math.round(28*s)}px 'Tiro Devanagari Sanskrit',serif`;
+  ctx.fillStyle=c.gold+'CC';
+  ctx.fillText('कति ओटा प्रश्नको उत्तर मिलाउनुभयो? 👇',W/2,ctaY);
+}
+
 // ── VIEW SWITCHER ──
 let _view='static';
 function setView(v,btn){
@@ -787,6 +997,15 @@ function setView(v,btn){
 // ── ANIMATION ENGINE ──
 let _vt=0,_vraf=null,_vplaying=false,_vparticles=[];
 const VC_DUR=24;
+
+function getAnimDur(){
+  if(_type==='quiz'){
+    var timerMax=parseInt(getVal('f-timer')||'15');
+    var perQ=timerMax+9; // timer + reveal + next countdown
+    return (window._quizQs||[{q:''}]).length * perQ;
+  }
+  return VC_DUR;
+}
 
 function vcInitParticles(){
   const cv=document.getElementById('anim-cv');
@@ -815,11 +1034,12 @@ function vcPlay(){
   if(_vplaying){_vplaying=false;cancelAnimationFrame(_vraf);btn.textContent='▶ Play immediately';return;}
   vcInitParticles();
   _vt=0;_vplaying=true;btn.textContent='⏸ Pause';
+  const dur=getAnimDur();
   const start=performance.now();
   function loop(now){
-    _vt=Math.min((now-start)/1000,VC_DUR);
+    _vt=Math.min((now-start)/1000,dur);
     try{vcDrawFrame(_vt);}catch(e){console.error('VC anim error:',e.message);_vplaying=false;btn.textContent='▶ Play immediately';return;}
-    if(_vt<VC_DUR&&_vplaying){_vraf=requestAnimationFrame(loop);}
+    if(_vt<dur&&_vplaying){_vraf=requestAnimationFrame(loop);}
     else{_vplaying=false;btn.textContent='▶ Play immediately';}
   }
   _vraf=requestAnimationFrame(loop);
@@ -902,49 +1122,46 @@ function vcDrawFrame(t){
     ctx.lineWidth=(1-rp2)*5*s;ctx.stroke();
   }
 
-  // Corner ornaments
-  const co=44*s;ctx.strokeStyle=c.gold+'44';ctx.lineWidth=2*s;
-  [[0,0,1,1],[W,0,-1,1],[0,H,1,-1],[W,H,-1,-1]].forEach(([cx,cy,sx,sy])=>{
+  // Corner ornaments (safe zone)
+  const co=50*s;
+  const SAFE=Math.round(86*s);
+  ctx.strokeStyle=c.gold+'33';ctx.lineWidth=2*s;
+  [[SAFE*0.4,SAFE*0.4,1,1],[W-SAFE*0.4,SAFE*0.4,-1,1],
+   [SAFE*0.4,H-SAFE*0.4,1,-1],[W-SAFE*0.4,H-SAFE*0.4,-1,-1]].forEach(([cx,cy,sx,sy])=>{
     ctx.beginPath();ctx.moveTo(cx+sx*co,cy);ctx.lineTo(cx,cy);ctx.lineTo(cx,cy+sy*co);ctx.stroke();
   });
 
   ctx.textAlign='center';ctx.textBaseline='alphabetic';
-  const PAD=70*s;
-  let y=H*0.05;
+  let y=H*0.10;
 
-  // Brand
-  ctx.globalAlpha=fe(t,0,1.0);
-  sg2(c.glow,20);
-  ctx.font=`400 ${Math.round(20*s)}px 'Tiro Devanagari Sanskrit',serif`;ctx.fillStyle=c.sub+'BB';
-  ctx.fillText('॥  विधि चक्र  ॥',W/2,y);y+=30*s;
-  gl2(PAD,W-PAD,y,0.45);y+=28*s;
-  ctx.font=`${Math.round(50*s)}px 'Tiro Devanagari Sanskrit',serif`;ctx.fillStyle=c.gold;
-  const symPulse=1+0.06*Math.sin(t*2.5);
-  ctx.save();ctx.translate(W/2,y+38*s);ctx.scale(symPulse,symPulse);ctx.fillText(c.sym,0,0);ctx.restore();
-  y+=58*s;gl2(PAD,W-PAD,y,0.45);y+=28*s;
-  ctx.globalAlpha=1;cg2();
-
-  // Category pill
-  const catA=fe(t,0.6,1.4);
+  // Category tag (fades in first)
+  const catA=fe(t,0,0.8);
   ctx.globalAlpha=catA;
-  const catFS=Math.round(22*s);ctx.font=`400 ${catFS}px 'Tiro Devanagari Sanskrit',serif`;
-  const catW=ctx.measureText(TYPES[_type].label).width+70*s,catH=42*s,catX=W/2-catW/2;
-  ctx.fillStyle=c.acc+'22';rr2(catX,y,catW,catH,catH/2);ctx.fill();
-  ctx.strokeStyle=c.acc+'77';ctx.lineWidth=1.5*s;rr2(catX,y,catW,catH,catH/2);ctx.stroke();
-  sg2(c.glow,14);ctx.fillStyle=c.gold+'EE';ctx.fillText(TYPES[_type].label,W/2,y+catH*0.68);
-  y+=catH+26*s;ctx.globalAlpha=1;cg2();
+  const catFS=Math.round(26*s);
+  ctx.font=`400 ${catFS}px 'Tiro Devanagari Sanskrit',serif`;
+  const catLabel=`${c.sym}  ${TYPES[_type].label}`;
+  const catW=ctx.measureText(catLabel).width+Math.round(60*s),catH=Math.round(50*s),catX=W/2-catW/2;
+  ctx.fillStyle=c.acc+'20';rr2(catX,y,catW,catH,catH/2);ctx.fill();
+  ctx.strokeStyle=c.acc+'66';ctx.lineWidth=1.5*s;rr2(catX,y,catW,catH,catH/2);ctx.stroke();
+  sg2(c.glow,14);ctx.fillStyle=c.gold;ctx.fillText(catLabel,W/2,y+catH*0.70);
+  y+=catH+Math.round(20*s);
+  ctx.globalAlpha=1;cg2();
+  gl2(SAFE,W-SAFE,y,0.3);y+=Math.round(22*s);
 
   // Content — type-specific animated reveal
+  if(_type==='quiz'){
+    vcDrawQuizAnim(ctx,t,W,H,s,c,SAFE);
+  } else {
   const fields=getAnimFields();
   fields.forEach((f,fi)=>{
     if(!f.text)return;
-    const startT=1.5+fi*1.2;
-    const lineA=fe(t,startT,startT+0.8);
+    const startT=0.8+fi*1.0;
+    const lineA=fe(t,startT,startT+0.7);
     if(lineA<=0)return;
     ctx.globalAlpha=lineA;
 
     // Light streak on reveal
-    const streakT=Math.min(Math.max((t-startT)/0.5,0),1);
+    const streakT=Math.min(Math.max((t-startT)/0.4,0),1);
     if(streakT<1){
       const sx=W/2+(-W*0.5+streakT*W);
       const sg3=ctx.createLinearGradient(sx-100*s,0,sx+100*s,0);
@@ -953,41 +1170,258 @@ function vcDrawFrame(t){
     }
 
     if(f.isLabel){
-      gl2(80*s,W-80*s,f.y*H,0.35);
+      gl2(SAFE,W-SAFE,f.y*H,0.35);
       sg2(c.glow,14);ctx.font=`400 ${Math.round(20*s)}px 'Tiro Devanagari Sanskrit',serif`;
       ctx.fillStyle=c.acc+'CC';ctx.fillText(f.text,W/2,f.y*H+26*s);cg2();
     } else {
-      // Panel + text
-      const lines=wl(f.text,`${f.bold?'700':'400'} ${Math.round(f.fs*s)}px 'Tiro Devanagari Sanskrit',serif`,W*0.80);
-      const lh=f.fs*1.25*s;
-      const panH=lines.length*lh+36*s;
-      ctx.fillStyle='rgba(0,0,0,0.38)';rr2(50*s,f.y*H,W-100*s,panH,12*s);ctx.fill();
-      ctx.strokeStyle=c.gold+(f.bold?'33':'22');ctx.lineWidth=1.5*s;rr2(50*s,f.y*H,W-100*s,panH,12*s);ctx.stroke();
-      sg2(f.bold?c.glow:null,f.bold?20:0);
-      ctx.font=`${f.bold?'700':'400'} ${Math.round(f.fs*s)}px 'Tiro Devanagari Sanskrit',serif`;
-      ctx.fillStyle=f.bold?c.gold:c.text+'EE';
+      const lines=wl(f.text,`${f.bold?'700':'600'} ${Math.round(f.fs*s)}px 'Tiro Devanagari Sanskrit',serif`,W*0.82);
+      const lh=f.fs*1.22*s;
+      const panH=lines.length*lh+30*s;
+      const rowGrad=ctx.createLinearGradient(SAFE,f.y*H,W-SAFE,f.y*H);
+      rowGrad.addColorStop(0,c.acc+'18');rowGrad.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=rowGrad;rr2(SAFE,f.y*H,W-SAFE*2,panH,12*s);ctx.fill();
+      ctx.strokeStyle=c.gold+(f.bold?'30':'18');ctx.lineWidth=1.5*s;rr2(SAFE,f.y*H,W-SAFE*2,panH,12*s);ctx.stroke();
+      if(f.bold){ctx.fillStyle=c.acc+'BB';ctx.fillRect(SAFE,f.y*H+panH*0.15,4*s,panH*0.7);}
+      sg2(f.bold?c.glow:null,f.bold?22:0);
+      ctx.font=`${f.bold?'700':'600'} ${Math.round(f.fs*s)}px 'Tiro Devanagari Sanskrit',serif`;
+      ctx.fillStyle=f.bold?c.gold:c.text;
       lines.forEach((l,li)=>{
-        const la=fe(t,startT+0.3+li*0.25,startT+0.6+li*0.25);
-        ctx.globalAlpha=la;ctx.fillText(l,W/2,f.y*H+32*s+li*lh);
+        const la=fe(t,startT+0.25+li*0.2,startT+0.55+li*0.2);
+        ctx.globalAlpha=la;ctx.fillText(l,W/2,f.y*H+28*s+li*lh);
       });
       ctx.globalAlpha=lineA;cg2();
     }
     ctx.globalAlpha=1;
   });
+  } // end else (non-quiz)
 
-  // Footer
+  // Footer / CTA
   const footA=fe(t,VC_DUR-4,VC_DUR-2);
   ctx.globalAlpha=footA;
-  gl2(PAD,W-PAD,H*0.895,0.3);
-  sg2(c.acc+'88',35);
-  ctx.font=`400 ${Math.round(20*s)}px 'Tiro Devanagari Sanskrit',serif`;ctx.fillStyle=c.sub+'99';
-  ctx.fillText('उपाय • विधि • शक्ति',W/2,H*0.912);
-  ctx.fillStyle=c.gold;ctx.font=`400 ${Math.round(46*s)}px 'Tiro Devanagari Sanskrit',serif`;
-  ctx.fillText('विधि चक्र',W/2,H*0.948);
-  ctx.fillStyle=c.sub+'55';ctx.font=`400 ${Math.round(17*s)}px 'Philosopher',serif`;
-  ctx.fillText('VIDHI CHAKRA',W/2,H*0.964);
+  const fY=H*0.875;
+  gl2(SAFE,W-SAFE,fY,0.25);
+  sg2(c.acc+'66',20);
+  ctx.font=`400 ${Math.round(22*s)}px 'Philosopher',serif`;
+  ctx.fillStyle=c.sub+'88';
+  ctx.fillText(getRotatingCTA(),W/2,fY+Math.round(34*s));
+  sg2(c.glow,35);
+  ctx.fillStyle=c.gold;
+  ctx.font=`400 ${Math.round(52*s)}px 'Tiro Devanagari Sanskrit',serif`;
+  ctx.fillText('विधि चक्र',W/2,fY+Math.round(96*s));
+  ctx.fillStyle=c.sub+'66';
+  ctx.font=`400 ${Math.round(20*s)}px 'Philosopher',serif`;
+  ctx.fillText('VIDHI CHAKRA',W/2,fY+Math.round(122*s));
   ctx.globalAlpha=1;cg2();
 }
+
+// ── QUIZ ANIMATION ──
+function vcDrawQuizAnim(ctx,t,W,H,s,c,SAFE){
+  // Self-contained helpers — no dependency on vcDrawFrame closures
+  function sg(col,sz){ctx.shadowColor=col||'transparent';ctx.shadowBlur=(sz||0)*s;ctx.shadowOffsetY=2*s;}
+  function cg(){ctx.shadowColor='transparent';ctx.shadowBlur=0;ctx.shadowOffsetY=0;}
+  function fe(t,st,en){var r=Math.min(Math.max((t-st)/(en-st),0),1);return 1-(1-r)*(1-r);}
+  function rr(x,y,w,h,r2){
+    ctx.beginPath();ctx.moveTo(x+r2,y);ctx.lineTo(x+w-r2,y);
+    ctx.arcTo(x+w,y,x+w,y+r2,r2);ctx.lineTo(x+w,y+h-r2);
+    ctx.arcTo(x+w,y+h,x+w-r2,y+h,r2);ctx.lineTo(x+r2,y+h);
+    ctx.arcTo(x,y+h,x,y+h-r2,r2);ctx.lineTo(x,y+r2);
+    ctx.arcTo(x,y,x+r2,y,r2);ctx.closePath();
+  }
+  function wl(text,font,maxW){
+    ctx.font=font;
+    var words=text.split(/\s+/),lines=[],cur='';
+    words.forEach(function(w){var tt=cur?cur+' '+w:w;if(ctx.measureText(tt).width>maxW&&cur){lines.push(cur);cur=w;}else cur=tt;});
+    if(cur)lines.push(cur);return lines;
+  }
+  try{
+    var allQs=window._quizQs||[];
+    var totalQs=allQs.length||1;
+    var timerMax=parseInt(getVal('f-timer')||'15');
+    var PER_Q=timerMax+9; // seconds allocated per question
+
+    // Which question are we showing right now based on elapsed time
+    var qIdx=Math.min(Math.floor(t/PER_Q),totalQs-1);
+    var localT=t-qIdx*PER_Q; // time within the current question's slot
+
+    var qo=allQs[qIdx]||{};
+    var question=qo.q||'';
+    var opts=[qo.A||'',qo.B||'',qo.C||'',qo.D||''];
+    var correct=qo.correct||'A';
+    var explain=qo.explain||'';
+    if(!question) return;
+
+    var LETTERS=['A','B','C','D'];
+    var REVEAL=1.8;
+    var TIMER_START=3.5;
+    var TIMER_END=TIMER_START+timerMax;
+    var ANSWER_START=TIMER_END+0.4;
+    var NEXT_START=ANSWER_START+1.0;
+    var lt=localT; // use local time within each question slot
+
+    var devFont="'Tiro Devanagari Sanskrit',serif";
+    var philFont="'Philosopher',serif";
+
+    // ── Quiz title (fades in first) ──
+    var titleA=fe(lt,0.0,0.7);
+    ctx.globalAlpha=titleA;
+    sg(c.acc+'88',16);
+    ctx.font='700 '+Math.round(30*s)+'px Philosopher,serif';
+    ctx.fillStyle=c.gold+'CC';
+    ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+    var titleTxt=totalQs>1?'🧠 Test Your Knowledge  ('+( qIdx+1)+'/'+totalQs+')':'🧠 Test Your Knowledge';
+    ctx.fillText(titleTxt,W/2,H*0.14);
+    cg(); ctx.globalAlpha=1;
+    var qA=fe(lt,0.2,1.0);
+    ctx.globalAlpha=qA;
+    var qFS=Math.round(42*s);
+    var qLH=Math.round(56*s);
+    var qLines=wl(question,'700 '+qFS+'px '+devFont,(W-SAFE*2)*0.88);
+    var qH=Math.max(qLines.length*qLH+Math.round(52*s),Math.round(160*s));
+    var qY=H*0.22; // pushed down from 0.12 → no overlap with ॐ/hook
+
+    ctx.fillStyle='rgba(0,0,0,0.5)';
+    rr(SAFE,qY,W-SAFE*2,qH,Math.round(14*s)); ctx.fill();
+    ctx.strokeStyle=c.acc+'66'; ctx.lineWidth=2.5*s;
+    rr(SAFE,qY,W-SAFE*2,qH,Math.round(14*s)); ctx.stroke();
+    ctx.fillStyle=c.acc; ctx.fillRect(SAFE,qY,W-SAFE*2,Math.round(5*s));
+    sg(c.glow,26);
+    ctx.font='700 '+qFS+'px '+devFont;
+    ctx.fillStyle=c.gold; ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+    var qTY=qY+(qH-qLines.length*qLH)/2+qFS;
+    for(var qi=0;qi<qLines.length;qi++) ctx.fillText(qLines[qi],W/2,qTY+qi*qLH);
+    ctx.globalAlpha=1; cg();
+
+    // ── Timer circle ──
+    if(lt>=TIMER_START && lt<ANSWER_START){
+      var timeLeft=Math.max(0,Math.ceil(TIMER_END-lt));
+      var pct=Math.max(0,(TIMER_END-lt)/timerMax);
+      var isUrgent=timeLeft<=5;
+      var CR=Math.round(44*s);
+      var CX=W/2;
+      var CY=qY+qH+CR+Math.round(16*s);
+      ctx.beginPath(); ctx.arc(CX,CY,CR,0,Math.PI*2);
+      ctx.fillStyle=isUrgent?'rgba(238,68,68,0.18)':'rgba(0,0,0,0.45)'; ctx.fill();
+      ctx.strokeStyle=isUrgent?'rgba(238,68,68,0.4)':c.gold+'33';
+      ctx.lineWidth=Math.round(2.5*s); ctx.stroke();
+      ctx.beginPath(); ctx.arc(CX,CY,CR-Math.round(5*s),-Math.PI/2,-Math.PI/2+pct*Math.PI*2,false);
+      ctx.strokeStyle=isUrgent?'#EE4444':c.gold;
+      ctx.lineWidth=Math.round(5*s); ctx.lineCap='round'; ctx.stroke(); ctx.lineCap='butt';
+      sg(isUrgent?'#EE4444':c.glow,28);
+      ctx.font='700 '+Math.round(38*s)+'px '+philFont;
+      ctx.fillStyle=isUrgent?'#EE4444':c.gold;
+      ctx.fillText(timeLeft,CX,CY+Math.round(14*s));
+      cg();
+    }
+
+    // ── Options ──
+    var iFS=Math.round(36*s);
+    var iLH=Math.round(48*s);
+    var footerTop=H*0.87;
+    var optsTop=qY+qH+Math.round(14*s);
+    var activeOpts=[];
+    for(var ai=0;ai<opts.length;ai++){if(opts[ai]) activeOpts.push(ai);}
+    var activeCount=activeOpts.length||1;
+    var totalGapH=Math.round(8*s)*(activeCount-1);
+    var rowH2=Math.floor((footerTop-optsTop-Math.round(64*s)-totalGapH)/activeCount);
+    rowH2=Math.min(Math.round(120*s),Math.max(Math.round(68*s),rowH2));
+    var OPT_GAP=Math.round(8*s);
+    var oy=optsTop;
+
+    for(var oi=0;oi<opts.length;oi++){
+      var opt=opts[oi];
+      if(!opt){continue;}
+      var letter=LETTERS[oi];
+      var revT=REVEAL+oi*0.4;
+      var optA=fe(lt,revT,revT+0.35);
+      if(optA<=0){oy+=rowH2+OPT_GAP;continue;}
+      var isCorrect=(letter===correct);
+      var showAns=(lt>=ANSWER_START);
+      var ansA=showAns?fe(lt,ANSWER_START,ANSWER_START+0.7):0;
+      var midY=oy+rowH2/2;
+      var CX2=SAFE+Math.round(32*s);
+
+      ctx.globalAlpha=optA;
+      ctx.fillStyle=showAns?(isCorrect?'rgba(48,200,112,'+(0.18*ansA)+')':'rgba(0,0,0,0.35)'):'rgba(0,0,0,0.38)';
+      rr(SAFE,oy,W-SAFE*2,rowH2,Math.round(12*s)); ctx.fill();
+      ctx.strokeStyle=showAns&&isCorrect?'rgba(48,200,112,'+(0.9*ansA)+')':c.gold+'20';
+      ctx.lineWidth=(showAns&&isCorrect?3:1.5)*s;
+      rr(SAFE,oy,W-SAFE*2,rowH2,Math.round(12*s)); ctx.stroke();
+
+      ctx.beginPath(); ctx.arc(CX2,midY,Math.round(24*s),0,Math.PI*2);
+      ctx.fillStyle=showAns&&isCorrect?'rgba(48,200,112,'+(0.3*ansA)+')':c.acc+'28'; ctx.fill();
+      ctx.strokeStyle=showAns&&isCorrect?'rgba(48,200,112,'+ansA+')':c.gold+'66';
+      ctx.lineWidth=Math.round(2.5*s); ctx.stroke();
+      sg(showAns&&isCorrect?'rgba(48,200,112,0.9)':c.glow,14);
+      ctx.font='700 '+Math.round(24*s)+'px '+philFont;
+      ctx.fillStyle=showAns&&isCorrect?'rgba(80,232,144,'+ansA+')':c.gold;
+      ctx.fillText(letter,CX2,midY+Math.round(9*s)); cg();
+
+      ctx.textAlign='left';
+      var lines2=wl(opt,'600 '+iFS+'px '+devFont,W-SAFE*2-Math.round(78*s));
+      ctx.font='600 '+iFS+'px '+devFont;
+      ctx.fillStyle=showAns&&isCorrect?'rgba(80,232,144,'+ansA+')':c.text;
+      var tx=SAFE+Math.round(68*s);
+      var ty2=midY-(Math.min(lines2.length,2)*iLH)/2+iLH*0.78;
+      for(var li=0;li<Math.min(lines2.length,2);li++) ctx.fillText(lines2[li],tx,ty2+li*iLH);
+      ctx.textAlign='center';
+
+      if(showAns&&isCorrect&&ansA>0.4){
+        sg('rgba(48,200,112,0.9)',22);
+        ctx.font='700 '+Math.round(32*s)+'px '+philFont;
+        ctx.fillStyle='rgba(80,232,144,'+ansA+')';
+        ctx.fillText('✓',W-SAFE-Math.round(18*s),midY+Math.round(11*s)); cg();
+      }
+      oy+=rowH2+OPT_GAP;
+    }
+    ctx.globalAlpha=1;
+
+    // ── 5s next question countdown ──
+    var footerTop=H*0.84;
+
+    if(lt>=NEXT_START && totalQs>1){
+      // "Next question in Xs" box
+      var nextLeft=Math.max(0,Math.ceil(NEXT_START+5-lt));
+      var nextA=fe(lt,NEXT_START,NEXT_START+0.5);
+      ctx.globalAlpha=nextA;
+      var nextY=oy+Math.round(8*s);
+      ctx.fillStyle='rgba(0,0,0,0.55)';
+      rr(SAFE,nextY,W-SAFE*2,Math.round(52*s),Math.round(10*s)); ctx.fill();
+      ctx.strokeStyle=c.gold+'33'; ctx.lineWidth=1.5*s;
+      rr(SAFE,nextY,W-SAFE*2,Math.round(52*s),Math.round(10*s)); ctx.stroke();
+      sg(c.glow,12);
+      ctx.font='400 '+Math.round(24*s)+'px '+devFont;
+      ctx.fillStyle=c.sub+'BB';
+      ctx.fillText('अर्को प्रश्न '+nextLeft+'s मा...',W/2,nextY+Math.round(34*s));
+      cg(); ctx.globalAlpha=nextA;
+      // CTA below the counter, anchored to footer
+      var ctaY3=footerTop-Math.round(44*s);
+      sg(c.glow,20);
+      ctx.font='700 '+Math.round(26*s)+'px '+devFont;
+      ctx.fillStyle=c.gold;
+      ctx.fillText('कति ओटा प्रश्नको उत्तर मिलाउनुभयो? 👇',W/2,ctaY3);
+      cg(); ctx.globalAlpha=1;
+    } else if(lt>=ANSWER_START+0.8){
+      var ctaA2=fe(lt,ANSWER_START+0.8,ANSWER_START+1.5);
+      ctx.globalAlpha=ctaA2;
+      sg(c.glow,26);
+      // Always anchor CTA to footer — never overlaps options
+      var ctaY2=footerTop-Math.round(44*s);
+      ctx.font='700 '+Math.round(28*s)+'px '+devFont;
+      ctx.fillStyle=c.gold;
+      ctx.fillText('कति ओटा प्रश्नको उत्तर मिलाउनुभयो? 👇',W/2,ctaY2);
+      cg(); ctx.globalAlpha=1;
+    }
+
+  }catch(e2){
+    console.error('Quiz anim error:',e2.message,e2.stack);
+    // Show error on canvas so we can see it on mobile
+    ctx.fillStyle='rgba(0,0,0,0.8)'; ctx.fillRect(0,0,W,H);
+    ctx.fillStyle='#FF6060'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.font='700 '+(Math.round(24*s))+'px sans-serif';
+    ctx.fillText('Error: '+e2.message,W/2,H/2);
+  }
+}
+
 
 // Map current type inputs to animation fields with y positions
 // For gyan we calculate y dynamically to avoid overlap
@@ -996,18 +1430,18 @@ function getAnimFields(){
     const heading=getVal('f-heading'), source=getVal('f-source');
     const items=[1,2,3,4,5].map(i=>getVal('f-item-'+i)).filter(x=>x);
     const fields=[];
-    let yFrac=0.24;
+    let yFrac=0.20;
     if(heading){
-      const estLines=Math.max(1,Math.ceil(heading.length/16));
-      fields.push({text:heading,y:yFrac,fs:40,bold:true});
-      yFrac+=estLines*0.058+0.025;
+      const estLines=Math.max(1,Math.ceil(heading.length/14));
+      fields.push({text:heading,y:yFrac,fs:48,bold:true});
+      yFrac+=estLines*0.062+0.025;
     }
     items.forEach((item,idx)=>{
-      const estLines=Math.max(1,Math.ceil(item.length/20));
-      fields.push({text:item,y:yFrac,fs:26,bold:false,num:idx+1});
-      yFrac+=estLines*0.046+0.030;
+      const estLines=Math.max(1,Math.ceil(item.length/18));
+      fields.push({text:item,y:yFrac,fs:34,bold:false,num:idx+1});
+      yFrac+=estLines*0.068+0.018;
     });
-    if(source) fields.push({text:'— '+source+' —',y:Math.min(yFrac,0.86),fs:18,bold:false});
+    if(source) fields.push({text:'— '+source+' —',y:Math.min(yFrac,0.82),fs:18,bold:false});
     return fields;
   }
   if(_type==='upay') return[
@@ -1035,6 +1469,7 @@ function getAnimFields(){
     {text:getVal('f-heading'),y:0.46,fs:44,bold:true},
     {text:getVal('f-body'),y:0.60,fs:32,bold:false},
   ];
+  if(_type==='quiz') return[]; // quiz uses its own vcDrawQuizFrame
   return[];
 }
 
@@ -1193,9 +1628,30 @@ function smartParsePeview(){
 function smartPasteApply(){
   const raw=document.getElementById('sp-input').value;
   if(!raw.trim()) return;
-  const r=smartParseText(raw);
 
-  // Fill fields of whichever tab is currently active — don't switch tabs
+  if(_type==='quiz'){
+    // Parse quiz format — supports single or multiple questions at once
+    const questions=smartParseQuizAll(raw);
+    if(!questions.length){
+      alert('प्रश्न detect भएन। Format मिलाउनुहोस्:\nप्रश्न: ...\nA. ...\nB. ...\nC. ...\nD. ...\nसही उत्तर: A');
+      return;
+    }
+    // Replace or extend _quizQs
+    if(questions.length===1){
+      // Single question — fill current slot
+      const q=questions[0];
+      const idx=window._quizCurrentIdx||0;
+      window._quizQs[idx]=q;
+    } else {
+      // Multiple questions — replace entire list
+      window._quizQs=questions;
+      window._quizCurrentIdx=0;
+    }
+    setTimeout(()=>{renderQuizInputs();renderCard();closeSmartPaste();},50);
+    return;
+  }
+
+  const r=smartParseText(raw);
   setTimeout(()=>{
     if(_type==='gyan'){
       if(r.heading){const el=document.getElementById('f-heading');if(el)el.value=r.heading;}
@@ -1204,7 +1660,6 @@ function smartPasteApply(){
       if(r.source){const el=document.getElementById('f-source');if(el)el.value=r.source;}
     } else if(_type==='upay'){
       if(r.heading){const el=document.getElementById('f-problem');if(el)el.value=r.heading;}
-      // Join items as separate lines in the body textarea
       const body=r.items.join('\n');
       const bel=document.getElementById('f-body');if(bel)bel.value=body;
       if(r.source){const el=document.getElementById('f-note');if(el)el.value=r.source;}
@@ -1226,11 +1681,413 @@ function smartPasteApply(){
   },50);
 }
 
-// ── INIT ──
+// Parse single or multiple quiz questions from pasted text
+function smartParseQuizAll(raw){
+  const questions=[];
+
+  // Split by "प्रश्न:" prefix — works whether or not there are blank lines between questions
+  // This handles Gemini output with or without blank line separators
+  const blocks=raw.split(/(?=प्रश्न\s*[:：])/i).map(b=>b.trim()).filter(b=>b);
+
+  // Fallback: if no प्रश्न: found, try blank-line splitting
+  const useBlocks=blocks.length>1?blocks:raw.split(/\n\s*\n/).map(b=>b.trim()).filter(b=>b);
+
+  useBlocks.forEach(block=>{
+    const lines=block.split('\n').map(l=>l.trim()).filter(l=>l);
+    const q={q:'',A:'',B:'',C:'',D:'',correct:'A',explain:''};
+    lines.forEach(l=>{
+      if(/^प्रश्न\s*[:：]\s*/i.test(l)){
+        q.q=l.replace(/^प्रश्न\s*[:：]\s*/i,'').trim();
+      } else if(/^[ABCD]\s*[.):\s]/i.test(l)){
+        const letter=l[0].toUpperCase();
+        q[letter]=l.replace(/^[ABCD]\s*[.):\s]*/i,'').trim();
+      } else if(/^(सही\s*उत्तर|उत्तर|answer)\s*[:：]/i.test(l)){
+        const ans=l.replace(/^(सही\s*उत्तर|उत्तर|answer)\s*[:：]\s*/i,'').trim();
+        const m=ans.match(/^([ABCD])/i);
+        if(m) q.correct=m[1].toUpperCase();
+      } else if(!q.q && l.length>5 && !/^[ABCD]/i.test(l)){
+        // First substantial non-option line = question if no प्रश्न: prefix
+        q.q=l;
+      }
+    });
+    if(q.q && (q.A||q.B||q.C||q.D)) questions.push(q);
+  });
+  return questions;
+}
+
+// ════════════════════════════════════════════
+// HOOK ZONE — rendered as accent strip on card
+// ════════════════════════════════════════════
+function drawHook(ctx,W,H,s,c,sg,cg,SAFE){
+  const hook=getVal('f-hook');
+  if(!hook) return 0;
+  // Small colored strip at very top of content area
+  const hFS=Math.round(30*s);
+  const stripH=Math.round(54*s);
+  const stripY=H*0.10+Math.round(54*s); // just below category pill
+  // Background strip
+  const stripGrad=ctx.createLinearGradient(SAFE,stripY,W-SAFE,stripY);
+  stripGrad.addColorStop(0,c.acc+'40'); stripGrad.addColorStop(0.5,c.acc+'28'); stripGrad.addColorStop(1,c.acc+'40');
+  ctx.fillStyle=stripGrad;
+  ctx.fillRect(SAFE,stripY,W-SAFE*2,stripH);
+  ctx.strokeStyle=c.acc+'66'; ctx.lineWidth=1.5*s;
+  ctx.strokeRect(SAFE,stripY,W-SAFE*2,stripH);
+  sg(c.glow,18);
+  ctx.font=`700 ${hFS}px 'Tiro Devanagari Sanskrit',serif`;
+  ctx.fillStyle=c.text;
+  ctx.textAlign='center'; ctx.textBaseline='alphabetic';
+  ctx.fillText(hook,W/2,stripY+stripH*0.70);
+  cg();
+  return stripH+Math.round(10*s); // extra y consumed
+}
+
+// ════════════════════════════════════════════
+// ROTATING CTA
+// ════════════════════════════════════════════
+const CTAS=[
+  'Save गर्नुहोस् 📌  •  Follow गर्नुहोस्',
+  'साथीलाई share गर्नुहोस् 🙏',
+  'Daily ज्ञानको लागि Follow गर्नुहोस् ✨',
+  'Comment गर्नुहोस् — के सोच्नुभयो?',
+  'कसैलाई Tag गर्नुहोस् जसलाई चाहिन्छ',
+  'Save now, read later 📖',
+  'भुल्नु अघि Save गर्नुहोस् ⭐',
+  'Follow — विधि चक्र 🔱',
+];
+function getRotatingCTA(){
+  // Rotates daily so it changes each day but is consistent within a session
+  const dayOfYear=Math.floor((Date.now()-new Date(new Date().getFullYear(),0,0))/(864e5));
+  return CTAS[dayOfYear%CTAS.length];
+}
+
+// ════════════════════════════════════════════
+// WORD COUNT DETECTOR
+// ════════════════════════════════════════════
+function updateWordCount(){
+  const bar=document.getElementById('word-count-bar');
+  if(!bar||_type!=='gyan') return;
+  const texts=[
+    getVal('f-hook'),
+    getVal('f-heading'),
+    ...[1,2,3,4,5].map(i=>getVal('f-item-'+i)),
+  ].filter(x=>x).join(' ');
+  const words=texts.split(/\s+/).filter(w=>w.length>0).length;
+  if(words===0){bar.style.display='none';return;}
+  bar.style.display='block';
+  const numEl=document.getElementById('word-count-num');
+  const fill=document.getElementById('word-count-fill');
+  const msg=document.getElementById('word-count-msg');
+  const pct=Math.min(100,Math.round(words/70*100));
+  fill.style.width=pct+'%';
+  if(words<=40){
+    fill.style.background='var(--green)';
+    numEl.style.color='var(--green)'; numEl.textContent=words+' words ✓';
+    msg.style.color='var(--green)'; msg.textContent='Perfect — clear and readable';
+  } else if(words<=70){
+    fill.style.background='var(--amber)';
+    numEl.style.color='var(--amber)'; numEl.textContent=words+' words ⚠';
+    msg.style.color='var(--amber)'; msg.textContent='Getting long — keep it under 70 words';
+  } else {
+    fill.style.background='var(--red)';
+    numEl.style.color='var(--red)'; numEl.textContent=words+' words ✗';
+    msg.style.color='var(--red)'; msg.textContent='Too much text — reduce for better reach. Aim under 70 words.';
+  }
+  updateQualityScore();
+}
+
+// ════════════════════════════════════════════
+// QUALITY SCORE
+// ════════════════════════════════════════════
+function updateQualityScore(){
+  const panel=document.getElementById('quality-panel');
+  if(_type!=='gyan'){if(panel)panel.style.display='none';return;}
+  if(panel)panel.style.display='block';
+
+  const hook=getVal('f-hook');
+  const heading=getVal('f-heading');
+  const items=[1,2,3,4,5].map(i=>getVal('f-item-'+i)).filter(x=>x);
+  const allText=[hook,heading,...items].filter(x=>x).join(' ');
+  const words=allText.split(/\s+/).filter(w=>w).length;
+  const hasEmoji=/[\u{1F300}-\u{1FFFF}⚠️🔥❓✨]/u.test(hook+heading);
+
+  const checks=[
+    {label:'Hook छ (scroll stopper)', pass:!!hook},
+    {label:'Heading छ (main topic)', pass:!!heading},
+    {label:'कम्तिमा २ बुँदाहरू छन्', pass:items.length>=2},
+    {label:'Word count ठीक छ (≤70)', pass:words<=70},
+    {label:'Emoji / visual cue छ', pass:hasEmoji},
+    {label:'Source/credibility छ', pass:!!getVal('f-source')},
+  ];
+  const score=Math.round(checks.filter(c=>c.pass).length/checks.length*100);
+
+  const scoreEl=document.getElementById('qs-score');
+  const checksEl=document.getElementById('qs-checks');
+  if(!scoreEl||!checksEl) return;
+
+  scoreEl.textContent=score+'/100';
+  scoreEl.style.color=score>=80?'var(--green)':score>=50?'var(--amber)':'var(--red)';
+
+  checksEl.innerHTML=checks.map(c=>`
+    <div style="color:${c.pass?'var(--green)':'var(--muted)'}">
+      ${c.pass?'✓':'○'} ${c.label}
+    </div>`).join('');
+}
+
+// ════════════════════════════════════════════
+// AI OPTIMIZE (Claude API)
+// ════════════════════════════════════════════
+async function aiOptimize(){
+  const btn=document.getElementById('ai-opt-btn');
+  const result=document.getElementById('ai-opt-result');
+  if(!result) return;
+
+  const hook=getVal('f-hook');
+  const heading=getVal('f-heading');
+  const items=[1,2,3,4,5].map(i=>getVal('f-item-'+i)).filter(x=>x);
+
+  if(!heading&&!items.length){alert('पहिले heading र कम्तिमा एउटा बुँदा लेख्नुहोस्।');return;}
+
+  btn.textContent='⏳ Optimizing...'; btn.disabled=true;
+  result.style.display='none';
+
+  const prompt=`You are a Nepali social media content optimizer for the Vidhi Chakra channel (Jyotish, Vedic knowledge, Sanatan Dharma).
+
+Current content:
+Hook: ${hook||'(none)'}
+Heading: ${heading||'(none)'}
+Items: ${items.map((x,i)=>`${i+1}. ${x}`).join('\n')||'(none)'}
+
+Optimize for Facebook/TikTok reels. Respond in this exact format:
+
+HOOK: [improved hook in Nepali, under 8 words, with emoji, scroll-stopping]
+HEADING: [improved heading in Nepali/Sanskrit, bold and clear]
+ITEMS:
+1. [point 1]
+2. [point 2]
+3. [point 3 if applicable]
+REASON: [1 line why these changes help]
+
+Rules: Keep Nepali language. Keep Vedic/spiritual authenticity. Make hook curiosity-triggering. Keep each point under 15 words.`;
+
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:600,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    const data=await resp.json();
+    const text=data.content?.[0]?.text||'';
+
+    result.style.display='block';
+    result.innerHTML=text.split('\n').filter(l=>l.trim()).map(l=>{
+      if(l.startsWith('HOOK:')||l.startsWith('HEADING:')||l.startsWith('REASON:')){
+        return`<div style="color:var(--gold);font-weight:700">${l}</div>`;
+      }
+      return`<div>${l}</div>`;
+    }).join('');
+
+    // Add apply button
+    result.innerHTML+=`<button onclick="applyAiSuggestions()" class="btn btn-gold" style="width:100%;margin-top:10px;font-size:12px">✓ Apply These Changes</button>`;
+    result._rawText=text;
+
+  }catch(e){
+    result.style.display='block';
+    result.innerHTML=`<span style="color:var(--red)">Error: ${e.message}</span>`;
+  }
+  btn.textContent='✨ AI Optimize — Improve with Claude'; btn.disabled=false;
+}
+
+function applyAiSuggestions(){
+  const result=document.getElementById('ai-opt-result');
+  if(!result?._rawText) return;
+  const text=result._rawText;
+
+  const hookM=text.match(/HOOK:\s*(.+)/);
+  const headM=text.match(/HEADING:\s*(.+)/);
+  const itemsM=[...text.matchAll(/^\d+\.\s*(.+)/gm)].map(m=>m[1].trim());
+
+  if(hookM?.[1]){const el=document.getElementById('f-hook');if(el)el.value=hookM[1].trim();}
+  if(headM?.[1]){const el=document.getElementById('f-heading');if(el)el.value=headM[1].trim();}
+  itemsM.forEach((item,i)=>{const el=document.getElementById('f-item-'+(i+1));if(el)el.value=item;});
+
+  renderCard(); updateWordCount();
+  result.innerHTML='<span style="color:var(--green)">✓ Applied! Check the preview.</span>';
+}
+
+// Hook the quality score into setType and renderCard
+const _origSetType=window.setType;
+window.setType=function(t,btn){
+  _type=t;
+  document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  buildInputs();
+  buildSuggestions();
+  renderCard();
+  setTimeout(()=>{updateWordCount();updateQualityScore();},50);
+};
+
+
+// ════════════════════════════════════
+// QUIZ MULTI-QUESTION MANAGEMENT
+// ════════════════════════════════════
+window._quizQs=[{q:'',A:'',B:'',C:'',D:'',correct:'A',explain:''}];
+window._quizCurrentIdx=0;
+
+function renderQuizInputs(){
+  const list=document.getElementById('quiz-questions-list'); if(!list) return;
+  const qs=window._quizQs;
+  list.innerHTML=qs.map((qo,qi)=>`
+    <div style="background:var(--bg2);border:1px solid ${qi===window._quizCurrentIdx?'rgba(240,192,64,0.5)':'var(--dim)'};border-radius:8px;padding:12px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-family:'Philosopher',serif;font-size:12px;color:var(--gold);font-weight:700">प्रश्न ${qi+1}</div>
+        <div style="display:flex;gap:6px">
+          <button onclick="previewQ(${qi})" style="background:rgba(240,192,64,0.12);border:1px solid rgba(240,192,64,0.4);color:var(--gold);padding:3px 8px;border-radius:4px;font-size:11px;cursor:pointer;font-family:'Philosopher',serif">Preview</button>
+          ${qs.length>1?`<button onclick="removeQ(${qi})" style="background:rgba(238,68,68,0.12);border:1px solid rgba(238,68,68,0.3);color:#FF6060;padding:3px 8px;border-radius:4px;font-size:11px;cursor:pointer">✕</button>`:''}
+        </div>
+      </div>
+      <textarea rows="2" placeholder="प्रश्न लेख्नुहोस्..." oninput="updateQ(${qi},'q',this.value)"
+        style="width:100%;background:var(--bg3);border:1px solid var(--dim);border-radius:6px;padding:8px 10px;color:var(--text);font-family:'Tiro Devanagari Sanskrit',serif;font-size:14px;outline:none;resize:none;margin-bottom:8px">${qo.q}</textarea>
+      ${['A','B','C','D'].map(l=>`
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+        <div style="width:24px;height:24px;border-radius:50%;background:${qo.correct===l?'rgba(48,200,112,0.25)':'rgba(153,102,221,0.2)'};border:1.5px solid ${qo.correct===l?'rgba(48,200,112,0.7)':'rgba(153,102,221,0.5)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Philosopher',serif;font-size:12px;font-weight:700;color:${qo.correct===l?'#30C870':'var(--gold)'};">${l}</div>
+        <input value="${qo[l]||''}" placeholder="विकल्प ${l}..." oninput="updateQ(${qi},'${l}',this.value)"
+          style="flex:1;background:var(--bg3);border:1px solid var(--dim);border-radius:4px;padding:7px 10px;color:var(--text);font-family:'Tiro Devanagari Sanskrit',serif;font-size:13px;outline:none"/>
+        <button onclick="setCorrect(${qi},'${l}')" style="background:${qo.correct===l?'rgba(48,200,112,0.2)':'var(--bg3)'};border:1px solid ${qo.correct===l?'rgba(48,200,112,0.6)':'var(--dim)'};color:${qo.correct===l?'#30C870':'var(--muted)'};padding:5px 8px;border-radius:4px;font-size:11px;cursor:pointer;white-space:nowrap">✓ सही</button>
+      </div>`).join('')}
+      <input value="${qo.explain||''}" placeholder="व्याख्या (optional)..." oninput="updateQ(${qi},'explain',this.value)"
+        style="width:100%;background:var(--bg3);border:1px solid var(--dim);border-radius:4px;padding:7px 10px;color:var(--muted);font-family:'Tiro Devanagari Sanskrit',serif;font-size:12px;outline:none;margin-top:4px"/>
+    </div>`).join('');
+  const countEl=document.getElementById('quiz-q-count');
+  if(countEl) countEl.textContent=qs.length+' Q';
+}
+
+function updateQ(qi,field,val){
+  if(!window._quizQs[qi]) return;
+  window._quizQs[qi][field]=val;
+  if(qi===window._quizCurrentIdx) renderCard();
+}
+function setCorrect(qi,letter){
+  window._quizQs[qi].correct=letter;
+  renderQuizInputs(); if(qi===window._quizCurrentIdx) renderCard();
+}
+function previewQ(qi){ window._quizCurrentIdx=qi; renderQuizInputs(); renderCard(); }
+function addQuizQuestion(){
+  window._quizQs.push({q:'',A:'',B:'',C:'',D:'',correct:'A',explain:''});
+  window._quizCurrentIdx=window._quizQs.length-1; renderQuizInputs();
+}
+function removeQ(qi){
+  window._quizQs.splice(qi,1);
+  if(window._quizCurrentIdx>=window._quizQs.length) window._quizCurrentIdx=window._quizQs.length-1;
+  renderQuizInputs(); renderCard();
+}
+function getQuizVal(field){
+  const q=window._quizQs[window._quizCurrentIdx||0]; if(!q) return '';
+  const map={'f-question':'q','f-optA':'A','f-optB':'B','f-optC':'C','f-optD':'D','f-correct':'correct','f-explain':'explain'};
+  return map[field]?q[map[field]]||'':getVal(field);
+}
+
+// ════════════════════════════════════════════
+// FACTORY BATCH ENGINE
+// ════════════════════════════════════════════
+let _batchData=[], _batchCurrentIndex=0;
+
+function handleBatchFile(input){
+  const file=input.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const text=e.target.result;
+    if(file.name.endsWith('.json')) parseBatchJSON(text);
+    else parseBatchCSV(text);
+  };
+  reader.readAsText(file);
+}
+
+function parseBatchCSV(text){
+  _batchData=[];
+  const lines=text.split(/\r?\n/); if(lines.length<2) return;
+  const headers=lines[0].split(',').map(h=>h.trim().replace(/["']/g,''));
+  for(let i=1;i<lines.length;i++){
+    if(!lines[i].trim()) continue;
+    const values=lines[i].split(',').map(v=>v.trim().replace(/["']/g,''));
+    const entry={};
+    headers.forEach((header,idx)=>{if(values[idx]) entry[header]=values[idx];});
+    _batchData.push(entry);
+  }
+  if(_batchData.length>0) initBatchMode();
+}
+
+function parseBatchJSON(text){
+  try{
+    const data=JSON.parse(text);
+    _batchData=Array.isArray(data)?data:[data];
+    initBatchMode();
+  }catch(e){alert('JSON parse error: '+e.message);}
+}
+
+function initBatchMode(){
+  _batchCurrentIndex=0;
+  document.getElementById('batch-nav-container').style.display='flex';
+  applyBatchRow();
+}
+
+function navigateBatch(dir){
+  if(!_batchData.length) return;
+  _batchCurrentIndex+=dir;
+  if(_batchCurrentIndex>=_batchData.length) _batchCurrentIndex=0;
+  if(_batchCurrentIndex<0) _batchCurrentIndex=_batchData.length-1;
+  applyBatchRow();
+}
+
+function applyBatchRow(){
+  const row=_batchData[_batchCurrentIndex];
+  document.getElementById('batch-index-display').textContent=`Post ${_batchCurrentIndex+1} of ${_batchData.length}`;
+  // Global hook
+  if(row.hook){const el=document.getElementById('f-hook');if(el)el.value=row.hook;}
+  // Per-type fields
+  if(_type==='gyan'){
+    if(row.heading){const el=document.getElementById('f-heading');if(el)el.value=row.heading;}
+    for(let i=1;i<=5;i++){const el=document.getElementById(`f-item-${i}`);if(el)el.value=row[`item${i}`]||row[`item_${i}`]||'';}
+    if(row.source){const el=document.getElementById('f-source');if(el)el.value=row.source;}
+  } else if(_type==='upay'){
+    if(row.problem||row.heading){const el=document.getElementById('f-problem');if(el)el.value=row.problem||row.heading;}
+    if(row.body||row.remedy){const el=document.getElementById('f-body');if(el)el.value=row.body||row.remedy;}
+    if(row.note){const el=document.getElementById('f-note');if(el)el.value=row.note;}
+  } else if(_type==='prashna'){
+    if(row.question||row.heading){const el=document.getElementById('f-question');if(el)el.value=row.question||row.heading;}
+    if(row.answer||row.body){const el=document.getElementById('f-answer');if(el)el.value=row.answer||row.body;}
+  } else if(_type==='mantra'){
+    if(row.mantra){const el=document.getElementById('f-mantra');if(el)el.value=row.mantra;}
+    if(row.artha){const el=document.getElementById('f-artha');if(el)el.value=row.artha;}
+  } else if(_type==='rashi'){
+    if(row.rashi){const el=document.getElementById('f-rashi');if(el)el.value=row.rashi;}
+    if(row.keyword){const el=document.getElementById('f-keyword');if(el)el.value=row.keyword;}
+    if(row.body){const el=document.getElementById('f-body');if(el)el.value=row.body;}
+  } else if(_type==='tathya'){
+    if(row.number){const el=document.getElementById('f-number');if(el)el.value=row.number;}
+    if(row.heading){const el=document.getElementById('f-heading');if(el)el.value=row.heading;}
+    if(row.body){const el=document.getElementById('f-body');if(el)el.value=row.body;}
+  }
+  renderCard();
+  if(_view==='anim') vcReset();
+}
+
+// ── INIT — wait for fonts to load before first render ──
+let _type='gyan', _theme='shakti';
 buildInputs();
 buildSuggestions();
-window.addEventListener('load',()=>{ setTimeout(renderCard,200); });
-window.addEventListener('resize',()=>{ if(_view==='static')renderCard();else vcReset(); });
+document.fonts.ready.then(()=>{
+  setTimeout(()=>{
+    renderCard();
+    updateQualityScore();
+  },150);
+});
+window.addEventListener('resize',()=>{
+  if(_view==='static') renderCard(); else vcReset();
+});
 </script>
 </body>
 </html>
