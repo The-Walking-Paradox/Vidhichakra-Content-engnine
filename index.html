@@ -91,7 +91,7 @@ canvas#cv{width:100%;height:100%;display:block}
 </div>
 
 <!-- VIEW TOGGLE -->
-<div style="display:flex;gap:10px;padding:0 16px 14px">
+<div id="view-toggle" style="display:flex;gap:10px;padding:0 16px 14px">
   <button class="type-btn active" id="view-static" onclick="setView('static',this)" style="flex:1;text-align:center">🖼 Static Card</button>
   <button class="type-btn" id="view-anim" onclick="setView('anim',this)" style="flex:1;text-align:center">🎬 Animation</button>
 </div>
@@ -106,6 +106,9 @@ canvas#cv{width:100%;height:100%;display:block}
   <div class="theme-dot" data-theme="saraswati" style="background:radial-gradient(#00BFFF,#001428)" onclick="setTheme('saraswati',this)" title="Saraswati"></div>
   <div class="theme-dot" data-theme="cosmic" style="background:radial-gradient(#FFB020,#100A00)" onclick="setTheme('cosmic',this)" title="Cosmic Gold"></div>
 </div>
+
+<!-- CONTENT TOOLS — hidden for cinematic tab -->
+<div id="content-tools">
 
 <!-- ACTIONS PANEL -->
 <div style="padding:0 16px 10px;display:flex;flex-direction:column;gap:8px">
@@ -158,6 +161,8 @@ canvas#cv{width:100%;height:100%;display:block}
   </div>
 </div>
 
+</div><!-- end content-tools -->
+
 <!-- INPUTS (dynamic per type) -->
 <div class="inputs" id="inputs-area"></div>
 
@@ -175,7 +180,6 @@ canvas#cv{width:100%;height:100%;display:block}
     <canvas id="anim-cv" style="width:100%;height:100%;display:block"></canvas>
     <div id="anim-cd-overlay" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none"></div>
   </div>
-</div>
 
 <!-- ACTIONS -->
 <div class="actions" id="static-actions">
@@ -195,7 +199,6 @@ canvas#cv{width:100%;height:100%;display:block}
     <div id="ai-opt-result" style="display:none;margin-top:10px;background:var(--bg3);border-radius:6px;padding:10px 12px;font-size:12px;font-family:'EB Garamond',serif;line-height:1.8;color:var(--text)"></div>
   </div>
 </div>
-<div id="anim-actions" style="display:none;padding:0 16px;margin-bottom:16px">
   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
     <button class="btn btn-gold" onclick="vcCountdown(3)" style="font-size:12px">⏱ 3s</button>
     <button class="btn btn-gold" onclick="vcCountdown(5)" style="font-size:12px">⏱ 5s</button>
@@ -209,7 +212,7 @@ canvas#cv{width:100%;height:100%;display:block}
   <div id="vc-rec-status" style="font-size:11px;color:var(--muted);text-align:center;min-height:16px;margin-bottom:6px;font-family:'Philosopher',serif"></div>
   <div style="font-size:11px;color:var(--muted);line-height:1.9;font-family:'EB Garamond',serif">
     📹 <b style="color:var(--gold)">Record WebM</b> — records full animation, downloads as .webm (Android Chrome)<br/>
-    📱 iOS: use ⏱ countdown + screen recorder instead<br/>
+    📱 iPad/iPhone: tap ⬇ → Save to Files &nbsp;|&nbsp; 🤖 Android/Desktop: auto-download<br/>
     🖼 Save Frame: pause anytime → save that moment as PNG
   </div>
 </div>
@@ -291,12 +294,13 @@ function setType(t,btn){
   _type=t;
   document.querySelectorAll('.type-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  // Hide hook field for quiz — it has its own title
+  // Hide hook for quiz and cinematic
   const hookWrap=document.getElementById('hook-field-wrap');
   if(hookWrap) hookWrap.style.display=t==='quiz'?'none':'block';
-  buildInputs();
-  buildSuggestions();
-  renderCard();
+  // Cinematic has its own dedicated input panel
+  const hookWrap2=document.getElementById('hook-field-wrap');
+  if(hookWrap2) hookWrap2.style.display=t==='quiz'?'none':'block';
+  buildInputs();buildSuggestions();renderCard();
 }
 
 function setTheme(t,dot){
@@ -378,7 +382,6 @@ function buildInputs(){
       </div>`;
   }
   document.getElementById('inputs-area').innerHTML=html;
-  // Quiz needs to render its question list AFTER innerHTML is set
   if(_type==='quiz'){
     if(!window._quizQs||!window._quizQs.length) window._quizQs=[{q:'',A:'',B:'',C:'',D:'',correct:'A',explain:''}];
     renderQuizInputs();
@@ -529,7 +532,6 @@ function drawCard(ctx,W,H,full){
   }
 
   // ── TYPE-SPECIFIC CONTENT ──
-  // Quiz gets raised footer so content + footer both stay in safe zone
   const FOOTER_TOP=_type==='quiz'?H*0.84:H*0.875;
   if(_type==='gyan') drawGyan(ctx,W,H,y,FOOTER_TOP,s,c,sg,cg,gl,rr,SAFE,CONTENT_W);
   else if(_type==='upay') drawUpay(ctx,W,H,y,s,c,sg,cg,gl,rr);
@@ -985,7 +987,7 @@ let _view='static';
 function setView(v,btn){
   _view=v;
   document.querySelectorAll('#view-static,#view-anim').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
+  if(btn) btn.classList.add('active');
   document.getElementById('static-wrap').style.display=v==='static'?'block':'none';
   document.getElementById('anim-wrap').style.display=v==='anim'?'block':'none';
   document.getElementById('static-actions').style.display=v==='static'?'grid':'none';
@@ -1216,7 +1218,6 @@ function vcDrawFrame(t){
 
 // ── QUIZ ANIMATION ──
 function vcDrawQuizAnim(ctx,t,W,H,s,c,SAFE){
-  // Self-contained helpers — no dependency on vcDrawFrame closures
   function sg(col,sz){ctx.shadowColor=col||'transparent';ctx.shadowBlur=(sz||0)*s;ctx.shadowOffsetY=2*s;}
   function cg(){ctx.shadowColor='transparent';ctx.shadowBlur=0;ctx.shadowOffsetY=0;}
   function fe(t,st,en){var r=Math.min(Math.max((t-st)/(en-st),0),1);return 1-(1-r)*(1-r);}
@@ -1235,9 +1236,23 @@ function vcDrawQuizAnim(ctx,t,W,H,s,c,SAFE){
   }
   try{
     var allQs=window._quizQs||[];
-    var totalQs=allQs.length||1;
+    var totalQs=allQs.length||0;
     var timerMax=parseInt(getVal('f-timer')||'15');
-    var PER_Q=timerMax+9; // seconds allocated per question
+    var PER_Q=timerMax+9;
+
+    // Show placeholder if no questions entered yet
+    if(totalQs===0||!allQs[0].q){
+      ctx.fillStyle='rgba(0,0,0,0.5)';
+      rr(SAFE,H*0.35,W-SAFE*2,H*0.12,Math.round(14*s));ctx.fill();
+      ctx.strokeStyle=c.acc+'44';ctx.lineWidth=1.5*s;
+      rr(SAFE,H*0.35,W-SAFE*2,H*0.12,Math.round(14*s));ctx.stroke();
+      sg(c.glow,16);
+      ctx.font='700 '+Math.round(32*s)+'px Tiro Devanagari Sanskrit,serif';
+      ctx.fillStyle=c.sub+'AA';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText('प्रश्न थप्नुहोस् → Animation हेर्नुहोस्',W/2,H*0.41);
+      cg();ctx.textBaseline='alphabetic';
+      return;
+    } // seconds allocated per question
 
     // Which question are we showing right now based on elapsed time
     var qIdx=Math.min(Math.floor(t/PER_Q),totalQs-1);
@@ -1548,13 +1563,27 @@ function vcStartRecord(){
       status.style.color='var(--muted)';
       const blob=new Blob(_recChunks,{type:'video/webm'});
       const url=URL.createObjectURL(blob);
-      // Show download link + video preview
-      const a=document.createElement('a');
-      a.href=url;
-      a.download=`vidhichakra-${_type}-${Date.now()}.webm`;
-      document.body.appendChild(a); a.click();
-      setTimeout(()=>{URL.revokeObjectURL(url);document.body.removeChild(a);},2000);
-      status.textContent='✅ Saved to Downloads!';
+
+      // Show save modal with video preview — works on iPad Chrome, Android Chrome, desktop
+      const modal=document.createElement('div');
+      modal.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.92);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;gap:14px';
+      modal.innerHTML=`
+        <div style="color:#FFD860;font-family:'Philosopher',serif;font-size:16px;letter-spacing:1px">✅ Recording complete!</div>
+        <video src="${url}" controls playsinline style="max-width:260px;border-radius:10px;border:1px solid #333"></video>
+        <a href="${url}" download="vidhichakra-${_type}-${Date.now()}.webm"
+           style="background:#FFD860;color:#000;padding:12px 28px;border-radius:8px;font-family:'Philosopher',serif;font-weight:700;font-size:15px;text-decoration:none;text-align:center">
+          ⬇ Download Video
+        </a>
+        <div style="color:#888;font-size:12px;font-family:'Philosopher',serif;text-align:center">
+          iPad/iPhone: tap ⬇ → tap Share → Save to Files<br/>
+          Android/Desktop: tap ⬇ to download directly
+        </div>
+        <button onclick="this.closest('div[style]').remove();URL.revokeObjectURL('${url}')"
+          style="background:none;border:1px solid #444;color:#888;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px">
+          ✕ Close
+        </button>`;
+      document.body.appendChild(modal);
+      status.textContent='✅ Ready — tap Download Video';
       status.style.color='var(--green)';
     };
 
@@ -2109,15 +2138,18 @@ function applyBatchRow(){
   if(_view==='anim') vcReset();
 }
 
-// ── INIT — wait for fonts to load before first render ──
+
+// ── INIT — wait for DOM + fonts ──
 let _type='gyan', _theme='shakti';
-buildInputs();
-buildSuggestions();
-document.fonts.ready.then(()=>{
-  setTimeout(()=>{
-    renderCard();
-    updateQualityScore();
-  },150);
+document.addEventListener('DOMContentLoaded', ()=>{
+  buildInputs();
+  buildSuggestions();
+  document.fonts.ready.then(()=>{
+    setTimeout(()=>{
+      renderCard();
+      updateQualityScore();
+    },150);
+  });
 });
 window.addEventListener('resize',()=>{
   if(_view==='static') renderCard(); else vcReset();
